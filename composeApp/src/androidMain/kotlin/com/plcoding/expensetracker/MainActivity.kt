@@ -5,16 +5,27 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
+import com.plcoding.expensetracker.di.coreModule
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Initialize Koin with Android context
+        startKoin {
+            androidContext(this@MainActivity.applicationContext)
+            modules(coreModule)
+        }
 
         setContent {
             App()
         }
     }
 }
+
+
 
 @Preview
 @Composable
