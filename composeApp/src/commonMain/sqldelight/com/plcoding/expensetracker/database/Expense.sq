@@ -1,0 +1,37 @@
+CREATE TABLE Expense (
+    id TEXT PRIMARY KEY NOT NULL,
+    amount REAL NOT NULL,
+    category TEXT NOT NULL,
+    note TEXT,
+    date TEXT NOT NULL,
+    imagePath TEXT
+);
+
+-- Queries
+insertExpense:
+INSERT INTO Expense(id, amount, category, note, date, imagePath)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAllExpenses:
+SELECT * FROM Expense ORDER BY date DESC;
+
+selectExpenseById:
+SELECT * FROM Expense WHERE id = ?;
+
+updateExpense:
+UPDATE Expense SET 
+    amount = ?, 
+    category = ?, 
+    note = ?, 
+    date = ?, 
+    imagePath = ?
+WHERE id = ?;
+
+deleteExpense:
+DELETE FROM Expense WHERE id = ?;
+
+selectExpensesByCategory:
+SELECT * FROM Expense WHERE category = ? ORDER BY date DESC;
+
+selectExpensesByDateRange:
+SELECT * FROM Expense WHERE date BETWEEN ? AND ? ORDER BY date DESC;

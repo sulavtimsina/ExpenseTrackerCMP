@@ -7,9 +7,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.jetbrains.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
+
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -33,8 +32,10 @@ kotlin {
     
     jvm("desktop")
 
-    room {
-        schemaDirectory("$projectDir/schemas")
+    sourceSets {
+        getByName("commonMain") {
+            kotlin.srcDir("build/generated/sqldelight/code/ExpenseDatabase/commonMain")
+        }
     }
 
     sourceSets {
@@ -46,7 +47,7 @@ kotlin {
 
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
-            implementation(libs.ktor.client.okhttp)
+            implementation(libs.sqldelight.driver.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -61,37 +62,42 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jetbrains.compose.navigation)
-            implementation(libs.kotlinx.serialization.json)
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.sqlite.bundled)
+
+            implementation(libs.sqldelight.coroutines)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
 
-            implementation(libs.bundles.ktor)
-            implementation(libs.bundles.coil)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.compose.core)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
-            implementation(libs.ktor.client.okhttp)
+            implementation(libs.sqldelight.driver.sqlite)
         }
         nativeMain.dependencies {
-            implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.driver.native)
         }
+    }
+}
 
-        dependencies {
-            ksp(libs.androidx.room.compiler)
+sqldelight {
+    databases {
+        create("ExpenseDatabase") {
+            packageName.set("com.plcoding.expensetracker.database")
         }
     }
 }
 
 android {
-    namespace = "com.plcoding.bookpedia"
+    namespace = "com.plcoding.expensetracker"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.plcoding.bookpedia"
+        applicationId = "com.plcoding.expensetracker"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -119,11 +125,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.plcoding.bookpedia.MainKt"
+        mainClass = "com.plcoding.expensetracker.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.plcoding.bookpedia"
+            packageName = "com.plcoding.expensetracker"
             packageVersion = "1.0.0"
         }
     }
