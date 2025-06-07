@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.plcoding.expensetracker.analytics.presentation.AnalyticsScreen
 import com.plcoding.expensetracker.expense.presentation.add_edit_expense.AddEditExpenseScreen
 import com.plcoding.expensetracker.expense.presentation.expense_detail.ExpenseDetailScreen
 import com.plcoding.expensetracker.expense.presentation.expense_list.ExpenseListScreen
@@ -25,6 +26,9 @@ actual fun App() {
                     },
                     onNavigateToExpenseDetail = { expenseId ->
                         navController.navigate("expense_detail/$expenseId")
+                    },
+                    onNavigateToAnalytics = {
+                        navController.navigate("analytics")
                     }
                 )
             }
@@ -59,6 +63,15 @@ actual fun App() {
                     }
                 )
             }
+            
+            composable("analytics") {
+                AnalyticsScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
     }
 }
+

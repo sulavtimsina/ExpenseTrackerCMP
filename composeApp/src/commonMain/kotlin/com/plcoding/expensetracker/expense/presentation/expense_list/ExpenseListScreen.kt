@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ExpenseListScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToExpenseDetail: (String) -> Unit,
+    onNavigateToAnalytics: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ExpenseListViewModel = koinViewModel()
 ) {
@@ -49,7 +51,18 @@ fun ExpenseListScreen(
                     )
                 },
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = MaterialTheme.colors.onPrimary
+                contentColor = MaterialTheme.colors.onPrimary,
+                actions = {
+                    IconButton(
+                        onClick = onNavigateToAnalytics
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Analytics,
+                            contentDescription = "Analytics",
+                            tint = MaterialTheme.colors.onPrimary
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -159,3 +172,4 @@ fun ExpenseListScreen(
         }
     }
 }
+
