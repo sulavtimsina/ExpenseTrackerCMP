@@ -9,7 +9,7 @@
 ## Project Conventions
 
 ### Package Naming
-- Base package: `com.plcoding.bookpedia`
+- Base package: `com.sulavtimsina.bookpedia`
 - Feature-based package organization
 - Platform-specific packages mirror common structure
 

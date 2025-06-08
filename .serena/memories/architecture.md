@@ -6,7 +6,7 @@ CMP-Bookpedia/
 ├── composeApp/                    # Main application module
 │   ├── src/
 │   │   ├── commonMain/            # Shared code for all platforms
-│   │   │   ├── kotlin/com/plcoding/bookpedia/
+│   │   │   ├── kotlin/com/sulavtimsina/bookpedia/
 │   │   │   │   ├── core/          # Core business logic
 │   │   │   │   │   ├── domain/    # Domain models and interfaces
 │   │   │   │   │   └── presentation/ # UI-related utilities
@@ -46,6 +46,6 @@ CMP-Bookpedia/
 - **Desktop**: `main()` with `Window` and `App()`
 
 ## Package Structure
-- Base package: `com.plcoding.bookpedia`
+- Base package: `com.sulavtimsina.bookpedia`
 - Core modules: `core.domain`, `core.presentation`
 - Platform-specific implementations in respective source sets

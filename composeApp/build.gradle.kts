@@ -88,17 +88,17 @@ kotlin {
 sqldelight {
     databases {
         create("ExpenseDatabase") {
-            packageName.set("com.plcoding.expensetracker.database")
+            packageName.set("com.sulavtimsina.expensetracker.database")
         }
     }
 }
 
 android {
-    namespace = "com.plcoding.expensetracker"
+    namespace = "com.sulavtimsina.expensetracker"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.plcoding.expensetracker"
+        applicationId = "com.sulavtimsina.expensetracker"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -126,11 +126,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.plcoding.expensetracker.MainKt"
+        mainClass = "com.sulavtimsina.expensetracker.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.plcoding.expensetracker"
+            packageName = "com.sulavtimsina.expensetracker"
             packageVersion = "1.0.0"
         }
     }
