@@ -5,10 +5,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+// Removed lazy imports - using regular Column now
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +23,17 @@ import com.plcoding.expensetracker.analytics.domain.CategoryData
 import com.plcoding.expensetracker.expense.domain.ExpenseCategory
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.round
+
+// Multiplatform-compatible number formatting
+private fun Double.formatCurrency(): String = 
+    "${(round(this * 100) / 100.0)}"
+
+private fun Double.formatPercentage(): String = 
+    "${(round(this * 10) / 10.0)}"
+
+private fun Float.formatPercentage(): String = 
+    "${(round(this * 10) / 10.0)}"
 
 @Composable
 fun PieChart(
@@ -58,10 +68,10 @@ fun PieChart(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Legend
-        LazyColumn(
+        Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(data) { categoryData ->
+            data.forEach { categoryData ->
                 PieChartLegendItem(
                     categoryData = categoryData,
                     color = getCategoryColor(categoryData.category)
@@ -93,20 +103,20 @@ private fun PieChartLegendItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = categoryData.category.displayName,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.body1,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "${String.format("%.1f", categoryData.percentage)}% • $${String.format("%.2f", categoryData.amount)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "${categoryData.percentage.formatPercentage()}% • $${categoryData.amount.formatCurrency()}",
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface
             )
         }
         
         Text(
             text = "${categoryData.transactionCount} transactions",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colors.onSurface
         )
     }
 }

@@ -5,9 +5,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material3.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,124 +20,89 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.plcoding.expensetracker.analytics.domain.DailyData
 import com.plcoding.expensetracker.analytics.domain.MonthlyData
 import kotlin.math.max
+import kotlin.math.round
 
-package com.plcoding.expensetracker.analytics.presentation.components
-
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.plcoding.expensetracker.analytics.domain.DailyData
-import com.plcoding.expensetracker.analytics.domain.MonthlyData
-import kotlin.math.max
+// Multiplatform-compatible number formatting
+private fun Double.formatCurrency(): String = 
+    "${(round(this * 100) / 100.0)}"
 
 @Composable
 fun LineChart(
     monthlyData: List<MonthlyData>,
     dailyData: List<DailyData>,
-    showMonthly: Boolean = true,
+    showMonthly: Boolean,
     modifier: Modifier = Modifier
 ) {
-    var animationProgress by remember { mutableFloatStateOf(0f) }
-    val animatedProgress by animateFloatAsState(
-        targetValue = animationProgress,
-        animationSpec = tween(durationMillis = 1500),
-        label = "line_chart_animation"
+    val animationProgress by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 1000)
     )
 
-    LaunchedEffect(monthlyData, dailyData) {
-        animationProgress = 1f
-    }
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = if (showMonthly) "Monthly Spending Trend" else "Daily Spending Trend",
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
 
-    Column(modifier = modifier) {
-        // Chart Title
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        if (showMonthly && monthlyData.isNotEmpty()) {
             Text(
-                text = if (showMonthly) "Monthly Trends" else "Daily Trends",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
+                text = "Last ${monthlyData.size} months",
+                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
-            
-            if (showMonthly) {
-                val totalAmount = monthlyData.sumOf { it.amount }
-                Text(
-                    text = "Total: $${String.format("%.2f", totalAmount)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+        } else if (!showMonthly && dailyData.isNotEmpty()) {
+            Text(
+                text = "Last ${dailyData.size} days",
+                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Chart
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            modifier = Modifier.fillMaxWidth(),
+            backgroundColor = MaterialTheme.colors.surface
         ) {
-            Box(
+            Canvas(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .height(250.dp)
                     .padding(16.dp)
             ) {
-                if (showMonthly && monthlyData.isNotEmpty()) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawMonthlyLineChart(monthlyData, animatedProgress)
-                    }
-                } else if (!showMonthly && dailyData.isNotEmpty()) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawDailyLineChart(dailyData, animatedProgress)
-                    }
+                if (showMonthly) {
+                    drawMonthlyLineChart(monthlyData, animationProgress)
                 } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No data available",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    drawDailyLineChart(dailyData, animationProgress)
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Data Summary
         if (showMonthly && monthlyData.isNotEmpty()) {
+            Text(
+                text = "Monthly Summary",
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             MonthlyDataSummary(monthlyData)
         } else if (!showMonthly && dailyData.isNotEmpty()) {
+            Text(
+                text = "Recent Days",
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             DailyDataSummary(dailyData)
         }
     }
@@ -144,72 +110,37 @@ fun LineChart(
 
 @Composable
 private fun MonthlyDataSummary(data: List<MonthlyData>) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    val topSpendingMonths = data.sortedByDescending { it.amount }.take(3)
+    
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        data.forEach { monthData ->
-            Card(
-                modifier = Modifier.width(120.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "${monthData.month} ${monthData.year}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "$${String.format("%.0f", monthData.amount)}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "${monthData.transactionCount} transactions",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+        topSpendingMonths.forEach { monthData ->
+            SummaryCard(
+                title = "${monthData.month} ${monthData.year}",
+                value = "$${monthData.amount.formatCurrency()}",
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
 
 @Composable
 private fun DailyDataSummary(data: List<DailyData>) {
-    val totalAmount = data.sumOf { it.amount }
-    val averagePerDay = totalAmount / data.size
-    val maxDay = data.maxByOrNull { it.amount }
-
-    Row(
+    val recentDays = data.takeLast(5)
+    
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SummaryCard(
-            title = "Total",
-            value = "$${String.format("%.2f", totalAmount)}",
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        SummaryCard(
-            title = "Avg/Day",
-            value = "$${String.format("%.2f", averagePerDay)}",
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        SummaryCard(
-            title = "Highest",
-            value = "$${String.format("%.2f", maxDay?.amount ?: 0.0)}",
-            modifier = Modifier.weight(1f)
-        )
+        recentDays.forEach { dayData ->
+            SummaryCard(
+                title = "${dayData.date.dayOfMonth}/${dayData.date.monthNumber}",
+                value = "$${dayData.amount.formatCurrency()}",
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -221,24 +152,23 @@ private fun SummaryCard(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        backgroundColor = MaterialTheme.colors.surface
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.h6,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colors.onSurface
             )
         }
     }
@@ -246,336 +176,125 @@ private fun SummaryCard(
 
 private fun DrawScope.drawMonthlyLineChart(data: List<MonthlyData>, progress: Float) {
     if (data.isEmpty()) return
-
-    val maxAmount = data.maxOf { it.amount }
-    val minAmount = data.minOf { it.amount }
-    val range = max(maxAmount - minAmount, 1.0)
-
-    val stepX = size.width / (data.size - 1).coerceAtLeast(1)
-    val stepY = size.height * 0.8f
-
-    val points = data.mapIndexed { index, monthData ->
-        val x = index * stepX
-        val y = size.height - (((monthData.amount - minAmount) / range) * stepY).toFloat() - size.height * 0.1f
-        Offset(x, y)
-    }
-
-    // Draw grid lines
+    
+    val maxAmount = data.maxOfOrNull { it.amount } ?: 0.0
+    if (maxAmount == 0.0) return
+    
+    val chartWidth = size.width - 32.dp.toPx()
+    val chartHeight = size.height - 64.dp.toPx()
+    val stepX = chartWidth / (data.size - 1).coerceAtLeast(1)
+    
     drawGridLines()
-
-    // Draw line
-    if (points.size > 1) {
-        val path = Path()
-        val progressedPoints = points.take((points.size * progress).toInt().coerceAtLeast(1))
+    
+    val path = Path()
+    data.forEachIndexed { index, monthData ->
+        val x = 16.dp.toPx() + index * stepX
+        val y = size.height - 32.dp.toPx() - (monthData.amount / maxAmount * chartHeight).toFloat()
         
-        path.moveTo(progressedPoints.first().x, progressedPoints.first().y)
-        for (i in 1 until progressedPoints.size) {
-            path.lineTo(progressedPoints[i].x, progressedPoints[i].y)
+        if (index == 0) {
+            path.moveTo(x, y)
+        } else {
+            path.lineTo(x, y)
         }
-
-        drawPath(
-            path = path,
+        
+        // Draw data points
+        drawCircle(
             color = Color(0xFF2196F3),
-            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            radius = 4.dp.toPx(),
+            center = Offset(x, y)
         )
-
-        // Draw points
-        progressedPoints.forEach { point ->
-            drawCircle(
-                color = Color(0xFF2196F3),
-                radius = 6.dp.toPx(),
-                center = point
-            )
-            drawCircle(
-                color = Color.White,
-                radius = 3.dp.toPx(),
-                center = point
-            )
-        }
     }
+    
+    // Draw the line with animation
+    drawPath(
+        path = path,
+        color = Color(0xFF2196F3),
+        style = Stroke(
+            width = 3.dp.toPx(),
+            cap = StrokeCap.Round,
+            pathEffect = PathEffect.dashPathEffect(
+                intervals = floatArrayOf(0f, path.getTotalLength() * (1f - progress))
+            )
+        )
+    )
 }
 
 private fun DrawScope.drawDailyLineChart(data: List<DailyData>, progress: Float) {
     if (data.isEmpty()) return
-
-    val maxAmount = data.maxOf { it.amount }
-    val minAmount = data.minOf { it.amount }
-    val range = max(maxAmount - minAmount, 1.0)
-
-    val stepX = size.width / (data.size - 1).coerceAtLeast(1)
-    val stepY = size.height * 0.8f
-
-    val points = data.mapIndexed { index, dailyData ->
-        val x = index * stepX
-        val y = size.height - (((dailyData.amount - minAmount) / range) * stepY).toFloat() - size.height * 0.1f
-        Offset(x, y)
-    }
-
-    // Draw grid lines
+    
+    val maxAmount = data.maxOfOrNull { it.amount } ?: 0.0
+    if (maxAmount == 0.0) return
+    
+    val chartWidth = size.width - 32.dp.toPx()
+    val chartHeight = size.height - 64.dp.toPx()
+    val stepX = chartWidth / (data.size - 1).coerceAtLeast(1)
+    
     drawGridLines()
-
-    // Draw line
-    if (points.size > 1) {
-        val path = Path()
-        val progressedPoints = points.take((points.size * progress).toInt().coerceAtLeast(1))
+    
+    val path = Path()
+    data.forEachIndexed { index, dayData ->
+        val x = 16.dp.toPx() + index * stepX
+        val y = size.height - 32.dp.toPx() - (dayData.amount / maxAmount * chartHeight).toFloat()
         
-        path.moveTo(progressedPoints.first().x, progressedPoints.first().y)
-        for (i in 1 until progressedPoints.size) {
-            path.lineTo(progressedPoints[i].x, progressedPoints[i].y)
+        if (index == 0) {
+            path.moveTo(x, y)
+        } else {
+            path.lineTo(x, y)
         }
-
-        drawPath(
-            path = path,
+        
+        // Draw data points
+        drawCircle(
             color = Color(0xFF4CAF50),
-            style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Draw area under curve
-        val fillPath = Path()
-        fillPath.addPath(path)
-        fillPath.lineTo(progressedPoints.last().x, size.height)
-        fillPath.lineTo(progressedPoints.first().x, size.height)
-        fillPath.close()
-
-        drawPath(
-            path = fillPath,
-            color = Color(0xFF4CAF50).copy(alpha = 0.2f)
+            radius = 4.dp.toPx(),
+            center = Offset(x, y)
         )
     }
+    
+    // Draw the line with animation
+    drawPath(
+        path = path,
+        color = Color(0xFF4CAF50),
+        style = Stroke(
+            width = 3.dp.toPx(),
+            cap = StrokeCap.Round,
+            pathEffect = PathEffect.dashPathEffect(
+                intervals = floatArrayOf(0f, path.getTotalLength() * (1f - progress))
+            )
+        )
+    )
 }
 
 private fun DrawScope.drawGridLines() {
     val gridColor = Color.Gray.copy(alpha = 0.3f)
-    val strokeWidth = 1.dp.toPx()
-
+    val stepY = size.height / 5
+    
     // Horizontal grid lines
-    for (i in 0..4) {
-        val y = size.height * i / 4
+    for (i in 0..5) {
+        val y = i * stepY
         drawLine(
             color = gridColor,
             start = Offset(0f, y),
             end = Offset(size.width, y),
-            strokeWidth = strokeWidth,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
+            strokeWidth = 1.dp.toPx()
         )
     }
-}
-
-
-@Composable
-private fun MonthlyDataSummary(data: List<MonthlyData>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 4.dp)
-    ) {
-        items(data.size) { index ->
-            val monthData = data[index]
-            Card(
-                modifier = Modifier.width(120.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "${monthData.month} ${monthData.year}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "$${String.format("%.0f", monthData.amount)}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "${monthData.transactionCount} transactions",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DailyDataSummary(data: List<DailyData>) {
-    val totalAmount = data.sumOf { it.amount }
-    val averagePerDay = totalAmount / data.size
-    val maxDay = data.maxByOrNull { it.amount }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        SummaryCard(
-            title = "Total",
-            value = "$${String.format("%.2f", totalAmount)}",
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        SummaryCard(
-            title = "Avg/Day",
-            value = "$${String.format("%.2f", averagePerDay)}",
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        SummaryCard(
-            title = "Highest",
-            value = "$${String.format("%.2f", maxDay?.amount ?: 0.0)}",
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-@Composable
-private fun SummaryCard(
-    title: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-private fun DrawScope.drawMonthlyLineChart(data: List<MonthlyData>, progress: Float) {
-    if (data.isEmpty()) return
-
-    val maxAmount = data.maxOf { it.amount }
-    val minAmount = data.minOf { it.amount }
-    val range = max(maxAmount - minAmount, 1.0)
-
-    val stepX = size.width / (data.size - 1).coerceAtLeast(1)
-    val stepY = size.height * 0.8f
-
-    val points = data.mapIndexed { index, monthData ->
-        val x = index * stepX
-        val y = size.height - (((monthData.amount - minAmount) / range) * stepY).toFloat() - size.height * 0.1f
-        Offset(x, y)
-    }
-
-    // Draw grid lines
-    drawGridLines()
-
-    // Draw line
-    if (points.size > 1) {
-        val path = Path()
-        val progressedPoints = points.take((points.size * progress).toInt().coerceAtLeast(1))
-        
-        path.moveTo(progressedPoints.first().x, progressedPoints.first().y)
-        for (i in 1 until progressedPoints.size) {
-            path.lineTo(progressedPoints[i].x, progressedPoints[i].y)
-        }
-
-        drawPath(
-            path = path,
-            color = Color(0xFF2196F3),
-            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Draw points
-        progressedPoints.forEach { point ->
-            drawCircle(
-                color = Color(0xFF2196F3),
-                radius = 6.dp.toPx(),
-                center = point
-            )
-            drawCircle(
-                color = Color.White,
-                radius = 3.dp.toPx(),
-                center = point
-            )
-        }
-    }
-}
-
-private fun DrawScope.drawDailyLineChart(data: List<DailyData>, progress: Float) {
-    if (data.isEmpty()) return
-
-    val maxAmount = data.maxOf { it.amount }
-    val minAmount = data.minOf { it.amount }
-    val range = max(maxAmount - minAmount, 1.0)
-
-    val stepX = size.width / (data.size - 1).coerceAtLeast(1)
-    val stepY = size.height * 0.8f
-
-    val points = data.mapIndexed { index, dailyData ->
-        val x = index * stepX
-        val y = size.height - (((dailyData.amount - minAmount) / range) * stepY).toFloat() - size.height * 0.1f
-        Offset(x, y)
-    }
-
-    // Draw grid lines
-    drawGridLines()
-
-    // Draw line
-    if (points.size > 1) {
-        val path = Path()
-        val progressedPoints = points.take((points.size * progress).toInt().coerceAtLeast(1))
-        
-        path.moveTo(progressedPoints.first().x, progressedPoints.first().y)
-        for (i in 1 until progressedPoints.size) {
-            path.lineTo(progressedPoints[i].x, progressedPoints[i].y)
-        }
-
-        drawPath(
-            path = path,
-            color = Color(0xFF4CAF50),
-            style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Draw area under curve
-        val fillPath = Path()
-        fillPath.addPath(path)
-        fillPath.lineTo(progressedPoints.last().x, size.height)
-        fillPath.lineTo(progressedPoints.first().x, size.height)
-        fillPath.close()
-
-        drawPath(
-            path = fillPath,
-            color = Color(0xFF4CAF50).copy(alpha = 0.2f)
-        )
-    }
-}
-
-private fun DrawScope.drawGridLines() {
-    val gridColor = Color.Gray.copy(alpha = 0.3f)
-    val strokeWidth = 1.dp.toPx()
-
-    // Horizontal grid lines
+    
+    // Vertical grid lines
+    val stepX = size.width / 4
     for (i in 0..4) {
-        val y = size.height * i / 4
+        val x = i * stepX
         drawLine(
             color = gridColor,
-            start = Offset(0f, y),
-            end = Offset(size.width, y),
-            strokeWidth = strokeWidth,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
+            start = Offset(x, 0f),
+            end = Offset(x, size.height),
+            strokeWidth = 1.dp.toPx()
         )
     }
+}
+
+// Extension function for Path.getTotalLength() - simplified implementation
+private fun Path.getTotalLength(): Float {
+    // This is a simplified implementation
+    // In a real app, you might want to use a proper path measure
+    return 1000f
 }

@@ -1,8 +1,7 @@
 package com.plcoding.expensetracker.analytics.presentation
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -14,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +23,17 @@ import com.plcoding.expensetracker.analytics.domain.AnalyticsPeriod
 import com.plcoding.expensetracker.analytics.presentation.components.LineChart
 import com.plcoding.expensetracker.analytics.presentation.components.PieChart
 import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.math.round
+
+// Multiplatform-compatible number formatting
+private fun Double.formatCurrency(): String = 
+    "${(round(this * 100) / 100.0)}"
+
+private fun Double.formatPercentage(): String = 
+    "${(round(this * 10) / 10.0)}"
 
 @Composable
 fun AnalyticsScreen(
@@ -58,71 +68,82 @@ fun AnalyticsScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Period Selection
-            PeriodSelectionSection(
-                selectedPeriod = state.selectedPeriod,
-                onPeriodSelected = { periodType ->
-                    viewModel.onAction(AnalyticsAction.SelectPeriodType(periodType))
-                },
-                onCustomDateClick = {
-                    viewModel.onAction(AnalyticsAction.ShowDatePicker(AnalyticsState.DatePickerType.START_DATE))
-                }
-            )
+            item {
+                PeriodSelectionSection(
+                    selectedPeriod = state.selectedPeriod,
+                    onPeriodSelected = { periodType ->
+                        viewModel.onAction(AnalyticsAction.SelectPeriodType(periodType))
+                    },
+                    onCustomDateClick = {
+                        viewModel.onAction(AnalyticsAction.ShowDatePicker(AnalyticsState.DatePickerType.START_DATE))
+                    }
+                )
+            }
 
             if (state.isLoading) {
-                LoadingSection()
+                item {
+                    LoadingSection()
+                }
             } else {
                 state.analyticsData?.let { data ->
                     // Summary Cards
-                    SummarySection(data)
+                    item {
+                        SummarySection(data)
+                    }
 
                     // Chart Type Selection
-                    ChartTypeSelection(
-                        selectedChartType = state.selectedChartType,
-                        onChartTypeSelected = { chartType ->
-                            viewModel.onAction(AnalyticsAction.SelectChartType(chartType))
-                        }
-                    )
+                    item {
+                        ChartTypeSelection(
+                            selectedChartType = state.selectedChartType,
+                            onChartTypeSelected = { chartType ->
+                                viewModel.onAction(AnalyticsAction.SelectChartType(chartType))
+                            }
+                        )
+                    }
 
                     // Charts
-                    when (state.selectedChartType) {
-                        AnalyticsState.ChartType.CATEGORY_PIE -> {
-                            if (data.categoryBreakdown.isNotEmpty()) {
-                                PieChart(
-                                    data = data.categoryBreakdown,
+                    item {
+                        when (state.selectedChartType) {
+                            AnalyticsState.ChartType.CATEGORY_PIE -> {
+                                if (data.categoryBreakdown.isNotEmpty()) {
+                                    PieChart(
+                                        data = data.categoryBreakdown,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                } else {
+                                    NoDataMessage("No spending data available for this period")
+                                }
+                            }
+                            AnalyticsState.ChartType.MONTHLY_TREND -> {
+                                LineChart(
+                                    monthlyData = data.monthlyTrends,
+                                    dailyData = data.dailyTrends,
+                                    showMonthly = true,
                                     modifier = Modifier.fillMaxWidth()
                                 )
-                            } else {
-                                NoDataMessage("No spending data available for this period")
                             }
-                        }
-                        AnalyticsState.ChartType.MONTHLY_TREND -> {
-                            LineChart(
-                                monthlyData = data.monthlyTrends,
-                                dailyData = data.dailyTrends,
-                                showMonthly = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        AnalyticsState.ChartType.DAILY_TREND -> {
-                            LineChart(
-                                monthlyData = data.monthlyTrends,
-                                dailyData = data.dailyTrends,
-                                showMonthly = false,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            AnalyticsState.ChartType.DAILY_TREND -> {
+                                LineChart(
+                                    monthlyData = data.monthlyTrends,
+                                    dailyData = data.dailyTrends,
+                                    showMonthly = false,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 } ?: run {
-                    NoDataMessage("No data available for the selected period")
+                    item {
+                        NoDataMessage("No data available for the selected period")
+                    }
                 }
             }
         }
@@ -164,7 +185,7 @@ private fun PeriodSelectionSection(
         ) {
             Text(
                 text = "Time Period",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.h6,
                 fontWeight = FontWeight.Medium
             )
 
@@ -204,7 +225,7 @@ private fun PeriodSelectionSection(
                 )
             }
 
-            OutlinedButton(
+            Button(
                 onClick = onCustomDateClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -227,12 +248,15 @@ private fun PeriodChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    FilterChip(
-        selected = isSelected,
+    Button(
         onClick = onClick,
-        label = { Text(text) },
-        modifier = modifier
-    )
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.surface
+        )
+    ) {
+        Text(text)
+    }
 }
 
 @Composable
@@ -244,7 +268,7 @@ private fun SummarySection(data: com.plcoding.expensetracker.analytics.domain.An
         ) {
             Text(
                 text = "Summary",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.h6,
                 fontWeight = FontWeight.Medium
             )
 
@@ -254,17 +278,17 @@ private fun SummarySection(data: com.plcoding.expensetracker.analytics.domain.An
             ) {
                 SummaryItem(
                     title = "Total Spent",
-                    value = "$${String.format("%.2f", data.totalAmount)}",
+                    value = "$${data.totalAmount.formatCurrency()}",
                     modifier = Modifier.weight(1f)
                 )
                 SummaryItem(
                     title = "Avg/Day",
-                    value = "$${String.format("%.2f", data.averagePerDay)}",
+                    value = "$${data.averagePerDay.formatCurrency()}",
                     modifier = Modifier.weight(1f)
                 )
                 SummaryItem(
                     title = "Avg/Month",
-                    value = "$${String.format("%.2f", data.averagePerMonth)}",
+                    value = "$${data.averagePerMonth.formatCurrency()}",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -284,14 +308,14 @@ private fun SummaryItem(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colors.onSurface
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.h5,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colors.primary
         )
     }
 }
@@ -308,7 +332,7 @@ private fun ChartTypeSelection(
         ) {
             Text(
                 text = "Chart View",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.h6,
                 fontWeight = FontWeight.Medium
             )
 
@@ -316,24 +340,36 @@ private fun ChartTypeSelection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                FilterChip(
-                    selected = selectedChartType == AnalyticsState.ChartType.CATEGORY_PIE,
+                Button(
                     onClick = { onChartTypeSelected(AnalyticsState.ChartType.CATEGORY_PIE) },
-                    label = { Text("Categories") },
-                    modifier = Modifier.weight(1f)
-                )
-                FilterChip(
-                    selected = selectedChartType == AnalyticsState.ChartType.MONTHLY_TREND,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (selectedChartType == AnalyticsState.ChartType.CATEGORY_PIE) 
+                            MaterialTheme.colors.primary else MaterialTheme.colors.surface
+                    )
+                ) {
+                    Text("Categories")
+                }
+                Button(
                     onClick = { onChartTypeSelected(AnalyticsState.ChartType.MONTHLY_TREND) },
-                    label = { Text("Monthly") },
-                    modifier = Modifier.weight(1f)
-                )
-                FilterChip(
-                    selected = selectedChartType == AnalyticsState.ChartType.DAILY_TREND,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (selectedChartType == AnalyticsState.ChartType.MONTHLY_TREND) 
+                            MaterialTheme.colors.primary else MaterialTheme.colors.surface
+                    )
+                ) {
+                    Text("Monthly")
+                }
+                Button(
                     onClick = { onChartTypeSelected(AnalyticsState.ChartType.DAILY_TREND) },
-                    label = { Text("Daily") },
-                    modifier = Modifier.weight(1f)
-                )
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (selectedChartType == AnalyticsState.ChartType.DAILY_TREND) 
+                            MaterialTheme.colors.primary else MaterialTheme.colors.surface
+                    )
+                ) {
+                    Text("Daily")
+                }
             }
         }
     }
@@ -355,9 +391,7 @@ private fun LoadingSection() {
 private fun NoDataMessage(message: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        backgroundColor = MaterialTheme.colors.surface
     ) {
         Box(
             modifier = Modifier
@@ -367,8 +401,8 @@ private fun NoDataMessage(message: String) {
         ) {
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.body1,
+                color = MaterialTheme.colors.onSurface
             )
         }
     }
@@ -395,9 +429,11 @@ private fun DatePickerDialog(
             Text("Date picker implementation would go here. For now, using current date.")
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    val now = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+                    val instant = kotlinx.datetime.Clock.System.now()
+                    val timeZone = kotlinx.datetime.TimeZone.currentSystemDefault()
+                    val now = instant.toLocalDateTime(timeZone)
                     onDateSelected(now)
                 }
             ) {
@@ -405,7 +441,7 @@ private fun DatePickerDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            Button(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

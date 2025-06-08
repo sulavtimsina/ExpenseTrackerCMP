@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -57,7 +57,7 @@ fun ExpenseListScreen(
                         onClick = onNavigateToAnalytics
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Analytics,
+                            imageVector = Icons.Default.Info,
                             contentDescription = "Analytics",
                             tint = MaterialTheme.colors.onPrimary
                         )

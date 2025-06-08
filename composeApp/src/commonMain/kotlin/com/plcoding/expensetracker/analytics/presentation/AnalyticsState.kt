@@ -3,6 +3,9 @@ package com.plcoding.expensetracker.analytics.presentation
 import com.plcoding.expensetracker.analytics.domain.AnalyticsData
 import com.plcoding.expensetracker.analytics.domain.AnalyticsPeriod
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 data class AnalyticsState(
     val analyticsData: AnalyticsData? = null,
@@ -27,20 +30,16 @@ data class AnalyticsState(
 }
 
 private fun getDefaultPeriod(): AnalyticsPeriod {
-    val now = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
-    val thirtyDaysAgo = now.let {
-        LocalDateTime(it.year, it.month, it.dayOfMonth, 0, 0).let { date ->
-            if (date.dayOfMonth > 30) {
-                LocalDateTime(date.year, date.month.minus(1), date.dayOfMonth - 30, 0, 0)
-            } else if (date.dayOfMonth <= 30) {
-                LocalDateTime(date.year, date.month.minus(1), 30 - date.dayOfMonth + 1, 0, 0)
-            } else {
-                date.let { d ->
-                    LocalDateTime(d.year, d.month.minus(1), d.dayOfMonth, 0, 0)
-                }
-            }
-        }
-    }
+    val instant = kotlinx.datetime.Clock.System.now()
+    val timeZone = kotlinx.datetime.TimeZone.currentSystemDefault()
+    val now = instant.toLocalDateTime(timeZone)
+    val thirtyDaysAgo = kotlinx.datetime.LocalDateTime(
+        now.year, 
+        now.month, 
+        (now.dayOfMonth - 30).coerceAtLeast(1), 
+        0, 
+        0
+    )
     
     return AnalyticsPeriod(
         startDate = thirtyDaysAgo,
@@ -48,3 +47,5 @@ private fun getDefaultPeriod(): AnalyticsPeriod {
         type = AnalyticsPeriod.PeriodType.LAST_30_DAYS
     )
 }
+
+

@@ -10,7 +10,11 @@ actual val databaseModule = module {
     single<SqlDriver> {
         val databasePath = File(System.getProperty("java.io.tmpdir"), "expense.db")
         val driver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
-        ExpenseDatabase.Schema.create(driver)
+        try {
+            ExpenseDatabase.Schema.create(driver)
+        } catch (e: Exception) {
+            // Database might already exist, ignore
+        }
         driver
     }
     
