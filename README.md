@@ -35,22 +35,48 @@ A modern, cross-platform expense tracking application built with **Kotlin Multip
 ## 📱 Screenshots
 
 ### Android
-<!-- Add your Android app screenshots here -->
-| Home/Analytics | Expense List | Add Expense |
-|:-:|:-:|:-:|
-| ![Android Analytics](screenshots/android_analytics.png) | ![Android Expenses](screenshots/android_expenses.png) | ![Android Add](screenshots/android_add.png) |
+<table>
+  <tr>
+    <td><strong>Home / Analytics</strong></td>
+    <td><strong>Expense List</strong></td>
+    <td><strong>Add Expense</strong></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/7adbf33e-cc2a-4dcf-98cd-8777346ec5c1" width="250" style="border:1px solid #ccc; border-radius:8px;" /></td>
+    <td><img src="https://github.com/user-attachments/assets/2303d90c-7a55-45bf-9c31-03df5608bbd4" width="250" style="border:1px solid #ccc; border-radius:8px;" /></td>
+    <td><img src="https://github.com/user-attachments/assets/324fccec-513a-41e1-8895-57e9d2df717d" width="250" style="border:1px solid #ccc; border-radius:8px;" /></td>
+  </tr>
+</table>
+
 
 ### Desktop
-<!-- Add your Desktop app screenshots here -->
-| Analytics Dashboard | Expense Management |
-|:-:|:-:|
-| ![Desktop Analytics](screenshots/desktop_analytics.png) | ![Desktop Expenses](screenshots/desktop_expenses.png) |
+<table>
+  <tr>
+    <td><strong>Analytics Dashboard</strong></td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/c4aa707b-4a4e-42dd-b844-029dd741ae6e" width="100%" style="border:1px solid #ccc; border-radius:8px;" />
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Expense Addition</strong></td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/9c41d887-ac4e-4caa-8090-ba6f315485d5" width="100%" style="border:1px solid #ccc; border-radius:8px;" />
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Expense Management</strong></td>
+  </tr>
+  <tr>
+    <td>
+      <img width="1124" alt="image" src="https://github.com/user-attachments/assets/c9d9d0b2-c6f8-4639-a899-c0f9ae2c9e20" style="border:1px solid #ccc; border-radius:8px; margin-bottom:8px;" />
+    </td>
+  </tr>
+</table>
 
-### iOS
-<!-- Add your iOS app screenshots here -->
-| Analytics | Expenses | Settings |
-|:-:|:-:|:-:|
-| ![iOS Analytics](screenshots/ios_analytics.png) | ![iOS Expenses](screenshots/ios_expenses.png) | ![iOS Settings](screenshots/ios_settings.png) |
 
 ## 🛠️ Tech Stack
 
@@ -216,12 +242,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **Google** for Material Design guidelines
 - **SQLDelight** team for excellent database tooling
 - **Koin** team for lightweight dependency injection
-
-## 📞 Support
-
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/expense-tracker-kmp/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/yourusername/expense-tracker-kmp/discussions)
-- 📧 **Contact**: your.email@domain.com
 
 ---
 
