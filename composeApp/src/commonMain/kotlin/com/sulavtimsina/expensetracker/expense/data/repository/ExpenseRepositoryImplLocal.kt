@@ -2,7 +2,6 @@ package com.sulavtimsina.expensetracker.expense.data.repository
 
 import com.sulavtimsina.expensetracker.core.domain.Result
 import com.sulavtimsina.expensetracker.expense.data.database.ExpenseDatabaseSource
-import com.sulavtimsina.expensetracker.expense.data.mappers.toDatabaseExpense
 import com.sulavtimsina.expensetracker.expense.data.mappers.toDomainExpense
 import com.sulavtimsina.expensetracker.expense.domain.Expense
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
@@ -13,7 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 
-class ExpenseRepositoryImpl(
+class ExpenseRepositoryImplLocal(
     private val databaseSource: ExpenseDatabaseSource
 ) : ExpenseRepository {
 

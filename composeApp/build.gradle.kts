@@ -9,13 +9,14 @@ plugins {
     alias(libs.plugins.compose.compiler)
 
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
     
@@ -48,6 +49,10 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.sqldelight.driver.android)
+            
+            // Firebase Android dependencies
+            implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
+            implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -73,6 +78,8 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.compose.core)
+            
+            // Firebase will be Android-specific for now
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -115,8 +122,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 

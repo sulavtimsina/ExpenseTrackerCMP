@@ -31,7 +31,7 @@ actual fun App() {
         
         // Initialize sample data
         LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 try {
                     sampleDataProvider.insertSampleData()
                 } catch (e: Exception) {
@@ -41,7 +41,8 @@ actual fun App() {
         }
         
         MaterialTheme {
-            val navController = rememberNavController()
+            // AuthWrapper {  // Temporarily disabled Firebase auth
+                val navController = rememberNavController()
             val currentRoute by navController.currentBackStackEntryAsState()
             
             Scaffold(
@@ -124,6 +125,7 @@ actual fun App() {
                     }
                 }
             }
+            // }  // End of AuthWrapper - temporarily disabled
         }
     }
 }

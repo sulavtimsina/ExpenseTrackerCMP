@@ -15,10 +15,12 @@ import com.sulavtimsina.expensetracker.expense.presentation.add_edit_expense.Add
 import com.sulavtimsina.expensetracker.expense.presentation.expense_detail.ExpenseDetailScreen
 import com.sulavtimsina.expensetracker.expense.presentation.expense_list.ExpenseListScreen
 import com.sulavtimsina.expensetracker.settings.presentation.SettingsScreen
+import com.sulavtimsina.expensetracker.auth.presentation.android.AndroidAuthWrapper
 
 @Composable
 actual fun App() {
     MaterialTheme {
+        AndroidAuthWrapper {
         val navController = rememberNavController()
         val currentRoute by navController.currentBackStackEntryAsState()
         
@@ -101,6 +103,7 @@ actual fun App() {
                     )
                 }
             }
+        }
         }
     }
 }
