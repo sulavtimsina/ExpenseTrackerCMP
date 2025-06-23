@@ -1,7 +1,9 @@
 package com.sulavtimsina.expensetracker.di
 
 import com.sulavtimsina.expensetracker.expense.data.database.ExpenseDatabaseSource
-import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplLocal
+import com.sulavtimsina.expensetracker.expense.data.cloud.ExpenseCloudSource
+import com.sulavtimsina.expensetracker.expense.data.cloud.SupabaseExpenseSource
+import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
 import com.sulavtimsina.expensetracker.expense.presentation.add_edit_expense.AddEditExpenseViewModel
 import com.sulavtimsina.expensetracker.expense.presentation.expense_detail.ExpenseDetailViewModel
@@ -15,11 +17,13 @@ import org.koin.dsl.module
 val expenseModule = module {
     // Data sources
     singleOf(::ExpenseDatabaseSource)
+    single<ExpenseCloudSource> { SupabaseExpenseSource() }
     
-    // Repository - Android will override this with Firebase-enabled version
+    // Repository - Hybrid version with local + cloud sync
     single<ExpenseRepository> {
-        ExpenseRepositoryImplLocal(
-            databaseSource = get()
+        ExpenseRepositoryImplHybrid(
+            localSource = get(),
+            cloudSource = get()
         )
     }
     
@@ -31,4 +35,5 @@ val expenseModule = module {
     viewModelOf(::AddEditExpenseViewModel)
     viewModelOf(::ExpenseDetailViewModel)
 }
+
 

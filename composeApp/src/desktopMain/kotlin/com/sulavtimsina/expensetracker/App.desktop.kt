@@ -41,7 +41,7 @@ actual fun App() {
         }
         
         MaterialTheme {
-            // AuthWrapper {  // Temporarily disabled Firebase auth
+            // Auth handled by Supabase in common code
                 val navController = rememberNavController()
             val currentRoute by navController.currentBackStackEntryAsState()
             

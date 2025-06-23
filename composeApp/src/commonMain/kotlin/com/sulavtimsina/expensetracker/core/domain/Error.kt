@@ -1,3 +1,5 @@
 package com.sulavtimsina.expensetracker.core.domain
 
-interface Error
+interface Error {
+    val name: String
+}

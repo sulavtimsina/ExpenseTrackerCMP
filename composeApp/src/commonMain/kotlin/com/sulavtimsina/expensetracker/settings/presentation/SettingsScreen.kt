@@ -74,6 +74,90 @@ fun SettingsScreen(
                 )
             }
             
+            // Supabase Sync Section
+            SettingsSection(title = "Cloud Sync") {
+                if (state.isSignedIn) {
+                    SettingsSwitchItem(
+                        title = "Enable Sync",
+                        subtitle = if (state.userId != null) "Signed in: ${state.userId?.take(8)}..." else "Sync your expenses across devices",
+                        checked = state.isSyncEnabled,
+                        onCheckedChange = { viewModel.onAction(SettingsAction.OnToggleSync) },
+                        icon = Icons.Default.Sync
+                    )
+                    
+                    SettingsClickableItem(
+                        title = "Manual Sync",
+                        subtitle = if (state.lastSyncTime != null) "Last sync: ${state.lastSyncTime}" else "Sync now",
+                        onClick = { viewModel.onAction(SettingsAction.OnManualSync) },
+                        icon = Icons.Default.CloudSync,
+                        enabled = !state.syncInProgress
+                    )
+                    
+                    SettingsClickableItem(
+                        title = "Sign Out",
+                        subtitle = "Disconnect from cloud sync",
+                        onClick = { viewModel.onAction(SettingsAction.OnSignOut) },
+                        icon = Icons.AutoMirrored.Filled.Logout,
+                        isDestructive = true
+                    )
+                } else {
+                    SettingsClickableItem(
+                        title = "Sign In to Sync",
+                        subtitle = "Backup and sync expenses across devices",
+                        onClick = { viewModel.onAction(SettingsAction.OnSignIn) },
+                        icon = Icons.Default.CloudUpload,
+                        enabled = !state.syncInProgress
+                    )
+                }
+                
+                // Show sync error if any
+                if (state.syncError != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = MaterialTheme.colors.error,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = state.syncError!!,
+                            color = MaterialTheme.colors.error,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(
+                            onClick = { viewModel.onAction(SettingsAction.OnClearSyncError) }
+                        ) {
+                            Text("Dismiss")
+                        }
+                    }
+                }
+                
+                // Show sync progress
+                if (state.syncInProgress) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Syncing...",
+                            style = MaterialTheme.typography.caption
+                        )
+                    }
+                }
+            }
+            
             // Data Section
             SettingsSection(title = "Data Management") {
                 SettingsClickableItem(
@@ -185,12 +269,14 @@ private fun SettingsClickableItem(
     onClick: () -> Unit,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     modifier: Modifier = Modifier,
-    isDestructive: Boolean = false
+    isDestructive: Boolean = false,
+    enabled: Boolean = true
 ) {
     Card(
-        onClick = onClick,
+        onClick = if (enabled) onClick else { {} },
         modifier = modifier.fillMaxWidth(),
-        elevation = 0.dp
+        elevation = 0.dp,
+        enabled = enabled
     ) {
         Row(
             modifier = Modifier

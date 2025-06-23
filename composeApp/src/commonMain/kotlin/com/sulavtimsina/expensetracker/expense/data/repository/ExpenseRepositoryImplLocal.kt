@@ -31,7 +31,7 @@ class ExpenseRepositoryImplLocal(
             val expense = databaseSource.getExpenseById(id)?.toDomainExpense()
             Result.Success(expense)
         } catch (e: Exception) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError("Database operation failed"))
         }
     }
 
@@ -47,7 +47,7 @@ class ExpenseRepositoryImplLocal(
             )
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError("Database operation failed"))
         }
     }
 
@@ -63,7 +63,7 @@ class ExpenseRepositoryImplLocal(
             )
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError("Database operation failed"))
         }
     }
 
@@ -72,7 +72,7 @@ class ExpenseRepositoryImplLocal(
             databaseSource.deleteExpense(id)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError("Database operation failed"))
         }
     }
 

@@ -25,7 +25,9 @@ sqldelight = "2.0.2"
 datetime = "0.6.1"
 
 # Firebase
-firebase-bom = "33.1.2"
+# firebase-bom removed
+supabase-kt = "2.6.0"
+ktor = "2.3.12"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -64,10 +66,19 @@ sqldelight-driver-native = { module = "app.cash.sqldelight:native-driver", versi
 sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 
-# Firebase dependencies (Google's Firebase SDK)
-firebase-bom = { module = "com.google.firebase:firebase-bom", version = "33.1.2" }
-firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
-firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
+# Firebase dependencies (removed - using Supabase instead)
+
+# Supabase KMP
+supabase-kt = { module = "io.github.jan-tennert.supabase:supabase-kt", version.ref = "supabase-kt" }
+supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase-kt" }
+supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt", version.ref = "supabase-kt" }
+supabase-auth = { module = "io.github.jan-tennert.supabase:gotrue-kt", version.ref = "supabase-kt" }
+
+# Ktor HTTP Client
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-java = { module = "io.ktor:ktor-client-java", version.ref = "ktor" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -77,7 +88,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
-google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
+# google-services plugin removed
 
 [bundles]
 coil = [
