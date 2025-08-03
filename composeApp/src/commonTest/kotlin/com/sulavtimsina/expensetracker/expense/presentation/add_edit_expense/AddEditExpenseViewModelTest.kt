@@ -2,23 +2,28 @@ package com.sulavtimsina.expensetracker.expense.presentation.add_edit_expense
 
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
 import com.sulavtimsina.expensetracker.expense.presentation.expense_list.FakeExpenseRepository
-import kotlinx.coroutines.test.runTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.*
+import kotlin.test.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AddEditExpenseViewModelTest {
 
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var fakeRepository: FakeExpenseRepository
     private lateinit var viewModel: AddEditExpenseViewModel
 
     @BeforeTest
     fun setup() {
+        Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeExpenseRepository()
         viewModel = AddEditExpenseViewModel(fakeRepository)
+    }
+    
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -98,6 +103,7 @@ class AddEditExpenseViewModelTest {
 
         // When
         viewModel.onAction(AddEditExpenseAction.OnSave)
+        advanceUntilIdle()
 
         // Then
         assertTrue(viewModel.state.value.isSaved)

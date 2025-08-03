@@ -102,6 +102,10 @@ kotlin {
             // Ktor client engine for iOS/Native
             implementation(libs.ktor.client.darwin)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+        }
     }
 }
 

@@ -21,7 +21,7 @@ class ExpenseCategoryTest {
 
     @Test
     fun `all categories have valid display names`() {
-        ExpenseCategory.entries.forEach { category ->
+        ExpenseCategory.values().forEach { category ->
             assertNotNull(category.displayName)
             assert(category.displayName.isNotBlank())
         }

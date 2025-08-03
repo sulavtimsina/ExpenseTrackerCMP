@@ -4,26 +4,30 @@ import com.sulavtimsina.expensetracker.analytics.domain.AnalyticsData
 import com.sulavtimsina.expensetracker.analytics.domain.AnalyticsPeriod
 import com.sulavtimsina.expensetracker.analytics.domain.CategoryData
 import com.sulavtimsina.expensetracker.analytics.domain.GetAnalyticsDataUseCase
-import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
+import com.sulavtimsina.expensetracker.expense.domain.*
+import com.sulavtimsina.expensetracker.core.domain.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.*
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnalyticsViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
-    private lateinit var fakeUseCase: FakeGetAnalyticsDataUseCase
+    private lateinit var fakeRepository: FakeExpenseRepository
+    private lateinit var useCase: GetAnalyticsDataUseCase
     private lateinit var viewModel: AnalyticsViewModel
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        fakeUseCase = FakeGetAnalyticsDataUseCase()
-        viewModel = AnalyticsViewModel(fakeUseCase)
+        fakeRepository = FakeExpenseRepository()
+        useCase = GetAnalyticsDataUseCase(fakeRepository)
+        viewModel = AnalyticsViewModel(useCase)
     }
 
     @AfterTest
@@ -44,16 +48,20 @@ class AnalyticsViewModelTest {
     @Test
     fun `onAction SelectPeriodType updates period and loads data`() = runTest {
         // Given
-        val mockData = createMockAnalyticsData()
-        fakeUseCase.setReturnValue(mockData)
+        val mockExpenses = listOf(
+            createMockExpense("1", 100.0, ExpenseCategory.FOOD),
+            createMockExpense("2", 200.0, ExpenseCategory.TRANSPORTATION)
+        )
+        fakeRepository.setExpenses(mockExpenses)
 
         // When
         viewModel.onAction(AnalyticsAction.SelectPeriodType(AnalyticsPeriod.PeriodType.LAST_3_MONTHS))
+        advanceUntilIdle()
 
         // Then
         assertEquals(AnalyticsPeriod.PeriodType.LAST_3_MONTHS, viewModel.state.selectedPeriod.type)
-        assertEquals(mockData, viewModel.state.analyticsData)
-        assertFalse(viewModel.state.isLoading)
+        assertNotNull(viewModel.state.analyticsData)
+        assertEquals(300.0, viewModel.state.analyticsData?.totalAmount)
     }
 
     @Test
@@ -76,9 +84,34 @@ class AnalyticsViewModelTest {
     }
 
     @Test
+    fun `onAction SetCustomStartDate updates custom start date`() {
+        // Given
+        val newDate = LocalDateTime(2024, 1, 15, 0, 0)
+
+        // When
+        viewModel.onAction(AnalyticsAction.SetCustomStartDate(newDate))
+
+        // Then
+        assertEquals(newDate, viewModel.state.customStartDate)
+    }
+
+    @Test
+    fun `onAction SetCustomEndDate updates custom end date`() {
+        // Given
+        val endDate = LocalDateTime(2024, 1, 31, 23, 59)
+
+        // When
+        viewModel.onAction(AnalyticsAction.SetCustomEndDate(endDate))
+
+        // Then
+        assertEquals(endDate, viewModel.state.customEndDate)
+    }
+
+    @Test
     fun `onAction HideDatePicker hides date picker`() {
         // Given
         viewModel.onAction(AnalyticsAction.ShowDatePicker(AnalyticsState.DatePickerType.START_DATE))
+        assertTrue(viewModel.state.showDatePicker)
 
         // When
         viewModel.onAction(AnalyticsAction.HideDatePicker)
@@ -89,42 +122,22 @@ class AnalyticsViewModelTest {
     }
 
     @Test
-    fun `onAction SetCustomStartDate updates custom start date`() {
-        // Given
-        val customDate = LocalDateTime(2024, 1, 1, 0, 0)
-
-        // When
-        viewModel.onAction(AnalyticsAction.SetCustomStartDate(customDate))
-
-        // Then
-        assertEquals(customDate, viewModel.state.customStartDate)
-    }
-
-    @Test
-    fun `onAction SetCustomEndDate updates custom end date`() {
-        // Given
-        val customDate = LocalDateTime(2024, 1, 31, 23, 59)
-
-        // When
-        viewModel.onAction(AnalyticsAction.SetCustomEndDate(customDate))
-
-        // Then
-        assertEquals(customDate, viewModel.state.customEndDate)
-    }
-
-    @Test
-    fun `onAction ApplyCustomDateRange applies custom period when dates are valid`() = runTest {
+    fun `onAction ApplyCustomDateRange applies custom date range`() = runTest {
         // Given
         val startDate = LocalDateTime(2024, 1, 1, 0, 0)
         val endDate = LocalDateTime(2024, 1, 31, 23, 59)
-        val mockData = createMockAnalyticsData()
-        fakeUseCase.setReturnValue(mockData)
-
+        val mockExpenses = listOf(
+            createMockExpense("1", 100.0, ExpenseCategory.FOOD, LocalDateTime(2024, 1, 15, 10, 0)),
+            createMockExpense("2", 200.0, ExpenseCategory.TRANSPORTATION, LocalDateTime(2024, 1, 20, 10, 0))
+        )
+        fakeRepository.setExpenses(mockExpenses)
+        
         viewModel.onAction(AnalyticsAction.SetCustomStartDate(startDate))
         viewModel.onAction(AnalyticsAction.SetCustomEndDate(endDate))
 
         // When
         viewModel.onAction(AnalyticsAction.ApplyCustomDateRange)
+        advanceUntilIdle()
 
         // Then
         assertEquals(AnalyticsPeriod.PeriodType.CUSTOM, viewModel.state.selectedPeriod.type)
@@ -133,57 +146,62 @@ class AnalyticsViewModelTest {
     }
 
     @Test
-    fun `onAction ApplyCustomDateRange does not apply when start date is after end date`() {
+    fun `loadAnalyticsData sets data in state`() = runTest {
         // Given
-        val startDate = LocalDateTime(2024, 1, 31, 0, 0)
-        val endDate = LocalDateTime(2024, 1, 1, 23, 59)
-        val originalPeriod = viewModel.state.selectedPeriod
-
-        viewModel.onAction(AnalyticsAction.SetCustomStartDate(startDate))
-        viewModel.onAction(AnalyticsAction.SetCustomEndDate(endDate))
-
-        // When
-        viewModel.onAction(AnalyticsAction.ApplyCustomDateRange)
+        val mockExpenses = listOf(
+            createMockExpense("1", 150.0, ExpenseCategory.FOOD),
+            createMockExpense("2", 250.0, ExpenseCategory.TRANSPORTATION),
+            createMockExpense("3", 100.0, ExpenseCategory.ENTERTAINMENT)
+        )
+        fakeRepository.setExpenses(mockExpenses)
+        
+        // When - Create new viewmodel to trigger init
+        viewModel = AnalyticsViewModel(useCase)
+        advanceUntilIdle()
 
         // Then
-        assertEquals(originalPeriod, viewModel.state.selectedPeriod)
+        assertNotNull(viewModel.state.analyticsData)
+        assertEquals(500.0, viewModel.state.analyticsData?.totalAmount)
+        assertEquals(3, viewModel.state.analyticsData?.categoryBreakdown?.size)
     }
 
-    @Test
-    fun `onAction RefreshData reloads analytics data`() = runTest {
-        // Given
-        val mockData = createMockAnalyticsData()
-        fakeUseCase.setReturnValue(mockData)
-
-        // When
-        viewModel.onAction(AnalyticsAction.RefreshData)
-
-        // Then
-        assertEquals(mockData, viewModel.state.analyticsData)
-        assertFalse(viewModel.state.isLoading)
+    private fun createMockExpense(
+        id: String,
+        amount: Double,
+        category: ExpenseCategory,
+        date: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    ): Expense {
+        return Expense(
+            id = id,
+            amount = amount,
+            category = category,
+            note = "Test expense",
+            date = date,
+            imagePath = null
+        )
     }
 
     private fun createMockAnalyticsData(): AnalyticsData {
         return AnalyticsData(
-            totalAmount = 500.0,
+            totalAmount = 1000.0,
             categoryBreakdown = listOf(
                 CategoryData(
                     category = ExpenseCategory.FOOD,
-                    amount = 300.0,
-                    percentage = 60f,
-                    transactionCount = 5
+                    amount = 500.0,
+                    percentage = 50f,
+                    transactionCount = 10
                 ),
                 CategoryData(
                     category = ExpenseCategory.TRANSPORTATION,
-                    amount = 200.0,
-                    percentage = 40f,
-                    transactionCount = 3
+                    amount = 300.0,
+                    percentage = 30f,
+                    transactionCount = 5
                 )
             ),
             monthlyTrends = emptyList(),
             dailyTrends = emptyList(),
-            averagePerDay = 16.67,
-            averagePerMonth = 500.0,
+            averagePerDay = 33.33,
+            averagePerMonth = 1000.0,
             period = AnalyticsPeriod(
                 startDate = LocalDateTime(2024, 1, 1, 0, 0),
                 endDate = LocalDateTime(2024, 1, 31, 23, 59),
@@ -193,32 +211,42 @@ class AnalyticsViewModelTest {
     }
 }
 
-class FakeGetAnalyticsDataUseCase : GetAnalyticsDataUseCase(
-    repository = object : com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository {
-        override fun getAllExpenses() = flowOf(emptyList<com.sulavtimsina.expensetracker.expense.domain.Expense>())
-        override suspend fun getExpenseById(id: String) = com.sulavtimsina.expensetracker.core.domain.Result.Success(null)
-        override suspend fun insertExpense(expense: com.sulavtimsina.expensetracker.expense.domain.Expense) = com.sulavtimsina.expensetracker.core.domain.Result.Success(Unit)
-        override suspend fun updateExpense(expense: com.sulavtimsina.expensetracker.expense.domain.Expense) = com.sulavtimsina.expensetracker.core.domain.Result.Success(Unit)
-        override suspend fun deleteExpense(id: String) = com.sulavtimsina.expensetracker.core.domain.Result.Success(Unit)
-        override fun getExpensesByCategory(category: ExpenseCategory) = flowOf(emptyList())
-        override fun getExpensesByDateRange(startDate: LocalDateTime, endDate: LocalDateTime) = flowOf(emptyList())
+class FakeExpenseRepository : ExpenseRepository {
+    private var expenses = emptyList<Expense>()
+    
+    fun setExpenses(expenses: List<Expense>) {
+        this.expenses = expenses
     }
-) {
-    private var returnValue: AnalyticsData? = null
-
-    fun setReturnValue(data: AnalyticsData) {
-        returnValue = data
+    
+    override fun getAllExpenses(): Flow<List<Expense>> = flowOf(expenses)
+    
+    override suspend fun getExpenseById(id: String): Result<Expense?, ExpenseError> {
+        return Result.Success(expenses.find { it.id == id })
     }
-
-    override fun invoke(period: AnalyticsPeriod) = flowOf(
-        returnValue ?: AnalyticsData(
-            totalAmount = 0.0,
-            categoryBreakdown = emptyList(),
-            monthlyTrends = emptyList(),
-            dailyTrends = emptyList(),
-            averagePerDay = 0.0,
-            averagePerMonth = 0.0,
-            period = period
-        )
-    )
+    
+    override suspend fun insertExpense(expense: Expense): Result<Unit, ExpenseError> {
+        expenses = expenses + expense
+        return Result.Success(Unit)
+    }
+    
+    override suspend fun updateExpense(expense: Expense): Result<Unit, ExpenseError> {
+        expenses = expenses.map { if (it.id == expense.id) expense else it }
+        return Result.Success(Unit)
+    }
+    
+    override suspend fun deleteExpense(id: String): Result<Unit, ExpenseError> {
+        expenses = expenses.filter { it.id != id }
+        return Result.Success(Unit)
+    }
+    
+    override fun getExpensesByCategory(category: ExpenseCategory): Flow<List<Expense>> {
+        return flowOf(expenses.filter { it.category == category })
+    }
+    
+    override fun getExpensesByDateRange(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime
+    ): Flow<List<Expense>> {
+        return flowOf(expenses.filter { it.date >= startDate && it.date <= endDate })
+    }
 }

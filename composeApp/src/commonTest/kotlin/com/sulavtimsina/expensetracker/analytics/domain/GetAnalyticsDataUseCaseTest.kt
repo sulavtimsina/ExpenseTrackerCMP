@@ -43,12 +43,12 @@ class GetAnalyticsDataUseCaseTest {
         val foodCategory = analyticsData.categoryBreakdown.find { it.category == ExpenseCategory.FOOD }
         assertEquals(150.0, foodCategory?.amount)
         assertEquals(2, foodCategory?.transactionCount)
-        assertEquals(66.7f, foodCategory?.percentage, 0.1f)
+        assertEquals(66.7f, foodCategory?.percentage ?: 0f, 0.1f)
         
         val transportCategory = analyticsData.categoryBreakdown.find { it.category == ExpenseCategory.TRANSPORTATION }
         assertEquals(75.0, transportCategory?.amount)
         assertEquals(1, transportCategory?.transactionCount)
-        assertEquals(33.3f, transportCategory?.percentage, 0.1f)
+        assertEquals(33.3f, transportCategory?.percentage ?: 0f, 0.1f)
     }
 
     @Test

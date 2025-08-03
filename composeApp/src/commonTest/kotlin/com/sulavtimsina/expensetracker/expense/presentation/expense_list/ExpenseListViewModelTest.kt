@@ -94,7 +94,7 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override suspend fun getExpenseById(id: String): Result<Expense?, ExpenseError> {
         return if (shouldReturnError) {
-            Result.Error(ExpenseError.EXPENSE_NOT_FOUND)
+            Result.Error(ExpenseError.ExpenseNotFound())
         } else {
             Result.Success(expenses.find { it.id == id })
         }
@@ -102,7 +102,7 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override suspend fun insertExpense(expense: Expense): Result<Unit, ExpenseError> {
         return if (shouldReturnError) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError())
         } else {
             expenses = expenses + expense
             Result.Success(Unit)
@@ -111,7 +111,7 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override suspend fun updateExpense(expense: Expense): Result<Unit, ExpenseError> {
         return if (shouldReturnError) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError())
         } else {
             expenses = expenses.map { if (it.id == expense.id) expense else it }
             Result.Success(Unit)
@@ -120,7 +120,7 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override suspend fun deleteExpense(id: String): Result<Unit, ExpenseError> {
         return if (shouldReturnError) {
-            Result.Error(ExpenseError.DATABASE_ERROR)
+            Result.Error(ExpenseError.DatabaseError())
         } else {
             expenses = expenses.filter { it.id != id }
             Result.Success(Unit)

@@ -3,24 +3,29 @@ package com.sulavtimsina.expensetracker.expense.presentation.expense_detail
 import com.sulavtimsina.expensetracker.expense.domain.Expense
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
 import com.sulavtimsina.expensetracker.expense.presentation.expense_list.FakeExpenseRepository
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.*
 import kotlinx.datetime.LocalDateTime
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseDetailViewModelTest {
 
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var fakeRepository: FakeExpenseRepository
     private lateinit var viewModel: ExpenseDetailViewModel
 
     @BeforeTest
     fun setup() {
+        Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeExpenseRepository()
         viewModel = ExpenseDetailViewModel(fakeRepository)
+    }
+    
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -38,6 +43,7 @@ class ExpenseDetailViewModelTest {
 
         // When
         viewModel.onAction(ExpenseDetailAction.LoadExpense("1"))
+        advanceUntilIdle()
 
         // Then
         assertEquals(expense, viewModel.state.value.expense)
@@ -52,6 +58,7 @@ class ExpenseDetailViewModelTest {
 
         // When
         viewModel.onAction(ExpenseDetailAction.LoadExpense("nonexistent"))
+        advanceUntilIdle()
 
         // Then
         assertNull(viewModel.state.value.expense)
@@ -71,9 +78,11 @@ class ExpenseDetailViewModelTest {
         )
         fakeRepository.setExpenses(listOf(expense))
         viewModel.onAction(ExpenseDetailAction.LoadExpense("1"))
+        advanceUntilIdle()
 
         // When
         viewModel.onAction(ExpenseDetailAction.OnDeleteExpense)
+        advanceUntilIdle()
 
         // Then
         assertTrue(viewModel.state.value.isDeleted)
@@ -94,9 +103,11 @@ class ExpenseDetailViewModelTest {
         fakeRepository.setExpenses(listOf(expense))
         fakeRepository.setShouldReturnError(true)
         viewModel.onAction(ExpenseDetailAction.LoadExpense("1"))
+        advanceUntilIdle()
 
         // When
         viewModel.onAction(ExpenseDetailAction.OnDeleteExpense)
+        advanceUntilIdle()
 
         // Then
         assertEquals(false, viewModel.state.value.isDeleted)
