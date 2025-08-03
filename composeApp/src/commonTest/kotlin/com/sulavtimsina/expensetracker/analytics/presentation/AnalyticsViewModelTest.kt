@@ -5,6 +5,7 @@ import com.sulavtimsina.expensetracker.analytics.domain.AnalyticsPeriod
 import com.sulavtimsina.expensetracker.analytics.domain.CategoryData
 import com.sulavtimsina.expensetracker.analytics.domain.GetAnalyticsDataUseCase
 import com.sulavtimsina.expensetracker.expense.domain.*
+import com.sulavtimsina.expensetracker.test.FakeExpenseRepository
 import com.sulavtimsina.expensetracker.core.domain.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -211,42 +212,3 @@ class AnalyticsViewModelTest {
     }
 }
 
-class FakeExpenseRepository : ExpenseRepository {
-    private var expenses = emptyList<Expense>()
-    
-    fun setExpenses(expenses: List<Expense>) {
-        this.expenses = expenses
-    }
-    
-    override fun getAllExpenses(): Flow<List<Expense>> = flowOf(expenses)
-    
-    override suspend fun getExpenseById(id: String): Result<Expense?, ExpenseError> {
-        return Result.Success(expenses.find { it.id == id })
-    }
-    
-    override suspend fun insertExpense(expense: Expense): Result<Unit, ExpenseError> {
-        expenses = expenses + expense
-        return Result.Success(Unit)
-    }
-    
-    override suspend fun updateExpense(expense: Expense): Result<Unit, ExpenseError> {
-        expenses = expenses.map { if (it.id == expense.id) expense else it }
-        return Result.Success(Unit)
-    }
-    
-    override suspend fun deleteExpense(id: String): Result<Unit, ExpenseError> {
-        expenses = expenses.filter { it.id != id }
-        return Result.Success(Unit)
-    }
-    
-    override fun getExpensesByCategory(category: ExpenseCategory): Flow<List<Expense>> {
-        return flowOf(expenses.filter { it.category == category })
-    }
-    
-    override fun getExpensesByDateRange(
-        startDate: LocalDateTime,
-        endDate: LocalDateTime
-    ): Flow<List<Expense>> {
-        return flowOf(expenses.filter { it.date >= startDate && it.date <= endDate })
-    }
-}

@@ -1,7 +1,7 @@
 package com.sulavtimsina.expensetracker.expense.presentation.add_edit_expense
 
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
-import com.sulavtimsina.expensetracker.expense.presentation.expense_list.FakeExpenseRepository
+import com.sulavtimsina.expensetracker.test.FakeExpenseRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
