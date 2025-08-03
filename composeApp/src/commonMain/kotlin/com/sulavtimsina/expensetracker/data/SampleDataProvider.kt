@@ -5,6 +5,8 @@ import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.minus
 import kotlin.random.Random
 
 
@@ -119,19 +121,9 @@ class SampleDataProvider(
     }
     
     private fun LocalDateTime.minusDays(days: Long): LocalDateTime {
-        // Simple implementation for demo purposes
-        val newDay = this.dayOfMonth - days.toInt()
-        return if (newDay > 0) {
-            LocalDateTime(year, month, newDay, hour, minute, second, nanosecond)
-        } else {
-            // For simplicity, just subtract from current date
-            // In production, you'd want proper date arithmetic
-            val monthNumber = month.ordinal + 1
-            val newMonth = if (monthNumber > 1) monthNumber - 1 else 12
-            val newYear = if (monthNumber > 1) year else year - 1
-            // Use kotlinx.datetime.Month to create the month
-            val monthEnum = Month.entries[newMonth - 1]
-            LocalDateTime(newYear, monthEnum, 15, hour, minute, second, nanosecond)
-        }
+        // Use kotlinx.datetime's proper date arithmetic
+        val datePeriod = DatePeriod(days = days.toInt())
+        val newDate = this.date.minus(datePeriod)
+        return LocalDateTime(newDate, this.time)
     }
 }

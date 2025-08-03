@@ -36,7 +36,7 @@ class ExpenseRepositoryImplHybrid(
     }
     
     override fun getExpensesByCategory(category: ExpenseCategory): Flow<List<Expense>> {
-        return localSource.getExpensesByCategory(category.name).map { databaseExpenses ->
+        return localSource.getExpensesByCategory(category.displayName).map { databaseExpenses ->
             databaseExpenses.map { it.toDomainExpense() }
         }
     }
@@ -166,13 +166,23 @@ class ExpenseRepositoryImplHybrid(
     }
     
     private suspend fun syncExpenseToCloud(expense: Expense) {
-        val userId = cloudSource.getCurrentUserId() ?: return
+        val userId = cloudSource.getCurrentUserId()
+        if (userId == null) {
+            println("Cannot sync to cloud: User not authenticated")
+            return
+        }
         
         try {
-            cloudSource.syncExpense(expense)
+            println("Syncing expense ${expense.id} to cloud")
+            val result = cloudSource.syncExpense(expense)
+            when (result) {
+                is Result.Success -> println("Successfully synced expense ${expense.id}")
+                is Result.Error -> println("Failed to sync expense ${expense.id}: ${result.error.name}")
+            }
         } catch (e: Exception) {
             // Log error but don't crash the app
             println("Failed to sync expense to cloud: ${e.message}")
+            e.printStackTrace()
         }
     }
     
