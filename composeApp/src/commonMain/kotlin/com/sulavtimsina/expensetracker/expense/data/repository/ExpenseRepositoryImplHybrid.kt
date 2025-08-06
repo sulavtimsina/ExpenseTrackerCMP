@@ -129,16 +129,38 @@ class ExpenseRepositoryImplHybrid(
     }
     
     suspend fun signInAndStartSync(): Result<String, ExpenseError> {
-        val signInResult = cloudSource.signInAnonymously()
+        // Check if already authenticated (from email/password login)
+        val currentUserId = cloudSource.getCurrentUserId()
+        
+        val signInResult = if (currentUserId != null) {
+            println("User already authenticated: $currentUserId")
+            Result.Success(currentUserId)
+        } else {
+            println("No authenticated user found, signing in anonymously")
+            cloudSource.signInAnonymously()
+        }
         
         if (signInResult is Result.Success) {
-            // Start initial sync after successful sign-in
+            // Start initial sync after successful sign-in or existing authentication
             syncScope.launch {
                 performInitialSync()
             }
         }
         
         return signInResult
+    }
+    
+    suspend fun triggerSyncForAuthenticatedUser(): Result<String, ExpenseError> {
+        val userId = cloudSource.getCurrentUserId()
+        return if (userId != null) {
+            println("Triggering sync for authenticated user: $userId")
+            syncScope.launch {
+                performInitialSync()
+            }
+            Result.Success(userId)
+        } else {
+            Result.Error(ExpenseError.CloudSync("No authenticated user found"))
+        }
     }
     
     private fun startBackgroundSync() {

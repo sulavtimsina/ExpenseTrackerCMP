@@ -29,14 +29,37 @@ actual fun App() {
         val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
         val expenseRepository = koinInject<ExpenseRepository>()
         
+        // Trigger sync when user becomes authenticated (including app start with existing session)
+        LaunchedEffect(isAuthenticated) {
+            if (isAuthenticated && expenseRepository is ExpenseRepositoryImplHybrid) {
+                val result = expenseRepository.triggerSyncForAuthenticatedUser()
+                when (result) {
+                    is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
+                        println("Auto-sync started for authenticated user: ${result.data}")
+                    }
+                    is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
+                        println("Failed to auto-start sync: ${result.error}")
+                    }
+                }
+            }
+        }
+        
         if (!isAuthenticated) {
             AuthScreen(
                 viewModel = authViewModel,
                 onLoginSuccess = {
-                    // Sync expenses after successful login
+                    // Trigger sync for the authenticated user
                     if (expenseRepository is ExpenseRepositoryImplHybrid) {
                         kotlinx.coroutines.GlobalScope.launch {
-                            expenseRepository.signInAndStartSync()
+                            val result = expenseRepository.triggerSyncForAuthenticatedUser()
+                            when (result) {
+                                is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
+                                    println("Sync started for user: ${result.data}")
+                                }
+                                is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
+                                    println("Failed to start sync: ${result.error}")
+                                }
+                            }
                         }
                     }
                 }

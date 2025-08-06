@@ -212,6 +212,7 @@ class SettingsActionTest {
             SettingsAction.OnAbout -> "about"
             SettingsAction.OnSignIn -> "signin"
             SettingsAction.OnSignOut -> "signout"
+            SettingsAction.OnDemoDataToggle -> "demo"
             SettingsAction.OnToggleSync -> "sync"
             SettingsAction.OnManualSync -> "manual"
             SettingsAction.OnClearSyncError -> "clear_error"
