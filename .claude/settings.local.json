@@ -14,7 +14,10 @@
       "Bash(adb logcat:*)",
       "Bash(adb shell am start:*)",
       "Bash(supabase stop:*)",
-      "Bash(supabase start:*)"
+      "Bash(supabase start:*)",
+      "Bash(adb shell:*)",
+      "Bash(cp:*)",
+      "Bash(supabase db reset:*)"
     ],
     "deny": []
   }
