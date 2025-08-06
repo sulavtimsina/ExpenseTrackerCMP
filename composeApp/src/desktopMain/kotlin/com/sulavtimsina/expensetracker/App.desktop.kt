@@ -17,6 +17,8 @@ import com.sulavtimsina.expensetracker.expense.presentation.expense_list.Expense
 import com.sulavtimsina.expensetracker.settings.presentation.SettingsScreen
 import org.koin.compose.KoinApplication
 import com.sulavtimsina.expensetracker.di.coreModule
+import com.sulavtimsina.expensetracker.auth.presentation.AuthScreen
+import com.sulavtimsina.expensetracker.auth.presentation.AuthViewModel
 import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
 import org.koin.compose.koinInject
@@ -28,30 +30,35 @@ actual fun App() {
         modules(coreModule)
     }) {
         MaterialTheme {
-            // Auto sign-in anonymously on app startup
+            val authViewModel = koinInject<AuthViewModel>()
+            val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
             val expenseRepository = koinInject<ExpenseRepository>()
-            val coroutineScope = rememberCoroutineScope()
             
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
-                    if (expenseRepository is ExpenseRepositoryImplHybrid) {
-                        val result = expenseRepository.signInAndStartSync()
-                        when (result) {
-                            is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
-                                println("Successfully signed in anonymously: ${result.data}")
-                            }
-                            is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
-                                println("Failed to sign in anonymously: ${result.error}")
+            if (!isAuthenticated) {
+                AuthScreen(
+                    viewModel = authViewModel,
+                    onLoginSuccess = {
+                        // Sync expenses after successful login
+                        if (expenseRepository is ExpenseRepositoryImplHybrid) {
+                            kotlinx.coroutines.GlobalScope.launch {
+                                expenseRepository.signInAndStartSync()
                             }
                         }
                     }
-                }
+                )
+            } else {
+                ExpenseApp()
             }
-            
-            val navController = rememberNavController()
-            val currentRoute by navController.currentBackStackEntryAsState()
-            
-            Scaffold(
+        }
+    }
+}
+
+@Composable
+private fun ExpenseApp() {
+    val navController = rememberNavController()
+    val currentRoute by navController.currentBackStackEntryAsState()
+    
+    Scaffold(
                 bottomBar = {
                     AppBottomNavigation(
                         currentRoute = currentRoute?.destination?.route,

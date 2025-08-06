@@ -15,6 +15,8 @@ import com.sulavtimsina.expensetracker.expense.presentation.add_edit_expense.Add
 import com.sulavtimsina.expensetracker.expense.presentation.expense_detail.ExpenseDetailScreen
 import com.sulavtimsina.expensetracker.expense.presentation.expense_list.ExpenseListScreen
 import com.sulavtimsina.expensetracker.settings.presentation.SettingsScreen
+import com.sulavtimsina.expensetracker.auth.presentation.AuthScreen
+import com.sulavtimsina.expensetracker.auth.presentation.AuthViewModel
 import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
 import org.koin.compose.koinInject
@@ -23,107 +25,110 @@ import kotlinx.coroutines.launch
 @Composable
 actual fun App() {
     MaterialTheme {
-        val navController = rememberNavController()
-        val currentRoute by navController.currentBackStackEntryAsState()
-        
-        // Auto sign-in anonymously on app startup
+        val authViewModel = koinInject<AuthViewModel>()
+        val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
         val expenseRepository = koinInject<ExpenseRepository>()
-        val coroutineScope = rememberCoroutineScope()
         
-        LaunchedEffect(Unit) {
-            coroutineScope.launch {
-                if (expenseRepository is ExpenseRepositoryImplHybrid) {
-                    val result = expenseRepository.signInAndStartSync()
-                    when (result) {
-                        is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
-                            println("Successfully signed in anonymously: ${result.data}")
-                        }
-                        is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
-                            println("Failed to sign in anonymously: ${result.error}")
+        if (!isAuthenticated) {
+            AuthScreen(
+                viewModel = authViewModel,
+                onLoginSuccess = {
+                    // Sync expenses after successful login
+                    if (expenseRepository is ExpenseRepositoryImplHybrid) {
+                        kotlinx.coroutines.GlobalScope.launch {
+                            expenseRepository.signInAndStartSync()
                         }
                     }
                 }
-            }
+            )
+        } else {
+            ExpenseApp()
         }
-        
-        Scaffold(
-            bottomBar = {
-                AppBottomNavigation(
-                    currentRoute = currentRoute?.destination?.route,
-                    onNavigateToDestination = { route ->
-                        navController.navigate(route) {
-                            // Pop up to the start destination to avoid building up a large stack
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
-                            }
-                            // Avoid multiple copies of the same destination when reselecting the same item
-                            launchSingleTop = true
-                            // Restore state when reselecting a previously selected item
-                            restoreState = true
+    }
+}
+
+@Composable
+private fun ExpenseApp() {
+    val navController = rememberNavController()
+    val currentRoute by navController.currentBackStackEntryAsState()
+    
+    Scaffold(
+        bottomBar = {
+            AppBottomNavigation(
+                currentRoute = currentRoute?.destination?.route,
+                onNavigateToDestination = { route ->
+                    navController.navigate(route) {
+                        // Pop up to the start destination to avoid building up a large stack
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
                         }
+                        // Avoid multiple copies of the same destination when reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = "expense_list", // Start with expenses
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable("analytics") {
+                AnalyticsScreen(
+                    onNavigateBack = { } // No back action needed for bottom nav destination
+                )
+            }
+            
+            composable("expense_list") {
+                ExpenseListScreen(
+                    onNavigateToAddExpense = {
+                        navController.navigate("add_expense")
+                    },
+                    onNavigateToExpenseDetail = { expenseId ->
+                        navController.navigate("expense_detail/$expenseId")
+                    },
+                    onNavigateToAnalytics = {
+                        navController.navigate("analytics")
                     }
                 )
             }
-        ) { paddingValues ->
-            NavHost(
-                navController = navController,
-                startDestination = "expense_list", // Start with expenses
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                composable("analytics") {
-                    AnalyticsScreen(
-                        onNavigateBack = { } // No back action needed for bottom nav destination
-                    )
-                }
-                
-                composable("expense_list") {
-                    ExpenseListScreen(
-                        onNavigateToAddExpense = {
-                            navController.navigate("add_expense")
-                        },
-                        onNavigateToExpenseDetail = { expenseId ->
-                            navController.navigate("expense_detail/$expenseId")
-                        },
-                        onNavigateToAnalytics = {
-                            navController.navigate("analytics")
-                        }
-                    )
-                }
-                
-                composable("settings") {
-                    SettingsScreen()
-                }
-                
-                composable("add_expense") {
-                    AddEditExpenseScreen(
-                        onNavigateBack = {
-                            navController.popBackStack()
-                        }
-                    )
-                }
-                
-                composable("edit_expense/{expenseId}") { backStackEntry ->
-                    val expenseId = backStackEntry.arguments?.getString("expenseId")
-                    AddEditExpenseScreen(
-                        expenseId = expenseId,
-                        onNavigateBack = {
-                            navController.popBackStack()
-                        }
-                    )
-                }
-                
-                composable("expense_detail/{expenseId}") { backStackEntry ->
-                    val expenseId = backStackEntry.arguments?.getString("expenseId") ?: return@composable
-                    ExpenseDetailScreen(
-                        expenseId = expenseId,
-                        onNavigateBack = {
-                            navController.popBackStack()
-                        },
-                        onNavigateToEdit = { id ->
-                            navController.navigate("edit_expense/$id")
-                        }
-                    )
-                }
+            
+            composable("settings") {
+                SettingsScreen()
+            }
+            
+            composable("add_expense") {
+                AddEditExpenseScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            
+            composable("edit_expense/{expenseId}") { backStackEntry ->
+                val expenseId = backStackEntry.arguments?.getString("expenseId")
+                AddEditExpenseScreen(
+                    expenseId = expenseId,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            
+            composable("expense_detail/{expenseId}") { backStackEntry ->
+                val expenseId = backStackEntry.arguments?.getString("expenseId") ?: return@composable
+                ExpenseDetailScreen(
+                    expenseId = expenseId,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToEdit = { id ->
+                        navController.navigate("edit_expense/$id")
+                    }
+                )
             }
         }
     }

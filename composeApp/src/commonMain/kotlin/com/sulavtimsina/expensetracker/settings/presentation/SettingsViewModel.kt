@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sulavtimsina.expensetracker.auth.data.AuthRepository
 import com.sulavtimsina.expensetracker.core.domain.Result
 import com.sulavtimsina.expensetracker.data.SampleDataProvider
 import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
@@ -15,7 +16,8 @@ import kotlinx.datetime.Clock
 
 class SettingsViewModel(
     private val expenseRepository: ExpenseRepository,
-    private val sampleDataProvider: SampleDataProvider
+    private val sampleDataProvider: SampleDataProvider,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     
     var state by mutableStateOf(SettingsState())
@@ -23,6 +25,19 @@ class SettingsViewModel(
     
     init {
         checkSignInStatus()
+        
+        // Observe auth state changes
+        viewModelScope.launch {
+            authRepository.isAuthenticated.collect { authenticated ->
+                state = state.copy(isSignedIn = authenticated)
+            }
+        }
+        
+        viewModelScope.launch {
+            authRepository.currentUser.collect { userId ->
+                state = state.copy(userId = userId)
+            }
+        }
     }
     
     fun onAction(action: SettingsAction) {
@@ -114,14 +129,23 @@ class SettingsViewModel(
     
     private fun signOutFromSupabase() {
         viewModelScope.launch {
-            // Sign out logic would be implemented here
-            state = state.copy(
-                isSignedIn = false,
-                userId = null,
-                isSyncEnabled = false,
-                lastSyncTime = null,
-                syncError = null
-            )
+            val result = authRepository.signOut()
+            when (result) {
+                is Result.Success -> {
+                    state = state.copy(
+                        isSignedIn = false,
+                        userId = null,
+                        isSyncEnabled = false,
+                        lastSyncTime = null,
+                        syncError = null
+                    )
+                }
+                is Result.Error -> {
+                    state = state.copy(
+                        syncError = result.error.name
+                    )
+                }
+            }
         }
     }
     
