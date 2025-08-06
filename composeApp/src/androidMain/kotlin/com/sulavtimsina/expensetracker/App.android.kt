@@ -16,6 +16,7 @@ import com.sulavtimsina.expensetracker.expense.presentation.expense_detail.Expen
 import com.sulavtimsina.expensetracker.expense.presentation.expense_list.ExpenseListScreen
 import com.sulavtimsina.expensetracker.settings.presentation.SettingsScreen
 import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
+import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
 import org.koin.compose.koinInject
 import kotlinx.coroutines.launch
 
@@ -26,18 +27,20 @@ actual fun App() {
         val currentRoute by navController.currentBackStackEntryAsState()
         
         // Auto sign-in anonymously on app startup
-        val expenseRepository = koinInject<ExpenseRepositoryImplHybrid>()
+        val expenseRepository = koinInject<ExpenseRepository>()
         val coroutineScope = rememberCoroutineScope()
         
         LaunchedEffect(Unit) {
             coroutineScope.launch {
-                val result = expenseRepository.signInAndStartSync()
-                when (result) {
-                    is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
-                        println("Successfully signed in anonymously: ${result.data}")
-                    }
-                    is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
-                        println("Failed to sign in anonymously: ${result.error}")
+                if (expenseRepository is ExpenseRepositoryImplHybrid) {
+                    val result = expenseRepository.signInAndStartSync()
+                    when (result) {
+                        is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
+                            println("Successfully signed in anonymously: ${result.data}")
+                        }
+                        is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
+                            println("Failed to sign in anonymously: ${result.error}")
+                        }
                     }
                 }
             }

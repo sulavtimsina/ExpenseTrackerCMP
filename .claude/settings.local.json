@@ -10,7 +10,9 @@
       "Bash(ls:*)",
       "Bash(pkill:*)",
       "Bash(sqlite3:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(adb logcat:*)",
+      "Bash(adb shell am start:*)"
     ],
     "deny": []
   }
