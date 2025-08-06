@@ -7,7 +7,7 @@ import io.github.jan.supabase.gotrue.Auth
 
 object SupabaseClient {
     val client = createSupabaseClient(
-        supabaseUrl = "http://localhost:54321", // Local development URL
+        supabaseUrl = "http://10.0.2.2:54321", // Local development URL (10.0.2.2 for Android emulator)
         supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" // Local anon key
     ) {
         install(Postgrest)
