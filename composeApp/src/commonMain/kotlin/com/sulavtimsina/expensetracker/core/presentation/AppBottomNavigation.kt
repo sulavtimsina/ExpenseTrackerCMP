@@ -12,8 +12,8 @@ enum class BottomNavDestination(
     val icon: ImageVector,
     val label: String
 ) {
+    EXPENSES("expense_list", Icons.Default.AccountBalanceWallet, "Expenses"),
     ANALYTICS("analytics", Icons.Default.Assessment, "Analytics"),
-    EXPENSES("expense_list", Icons.Default.AccountBalanceWallet, "Expenses"),  
     SETTINGS("settings", Icons.Default.Settings, "Settings")
 }
 

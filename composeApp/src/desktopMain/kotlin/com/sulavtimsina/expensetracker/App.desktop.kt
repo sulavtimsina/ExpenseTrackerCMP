@@ -72,7 +72,7 @@ actual fun App() {
             ) { paddingValues ->
                 NavHost(
                     navController = navController,
-                    startDestination = "analytics", // Changed default to analytics
+                    startDestination = "expense_list", // Start with expenses
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     composable("analytics") {
