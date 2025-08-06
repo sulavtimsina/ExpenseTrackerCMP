@@ -153,12 +153,16 @@ class ExpenseRepositoryImplHybrid(
     suspend fun triggerSyncForAuthenticatedUser(): Result<String, ExpenseError> {
         val userId = cloudSource.getCurrentUserId()
         return if (userId != null) {
+            println("=== SYNC DEBUG ===")
             println("Triggering sync for authenticated user: $userId")
+            println("Starting performInitialSync...")
             syncScope.launch {
                 performInitialSync()
             }
             Result.Success(userId)
         } else {
+            println("=== SYNC ERROR ===")
+            println("No authenticated user found when trying to trigger sync")
             Result.Error(ExpenseError.CloudSync("No authenticated user found"))
         }
     }
@@ -179,15 +183,21 @@ class ExpenseRepositoryImplHybrid(
     
     private suspend fun performInitialSync() {
         try {
+            println("=== PERFORM INITIAL SYNC ===")
+            println("Current user ID: ${cloudSource.getCurrentUserId()}")
+            
             // First, sync all local expenses to cloud
+            println("Step 1: Syncing local expenses to cloud...")
             syncAllLocalExpensesToCloud()
             
             // Then sync from cloud to local - only collect once for initial sync
             try {
+                println("Step 2: Fetching expenses from cloud...")
                 val result = (cloudSource as? SupabaseExpenseSource)?.fetchAllExpenses()
                 when (result) {
                     is Result.Success -> {
-                        println("Fetched ${result.data.size} expenses from cloud")
+                        println("Successfully fetched ${result.data.size} expenses from cloud")
+                        println("Cloud expenses: ${result.data.map { "${it.id}: ${it.amount} - ${it.note}" }}")
                         syncFromCloudToLocal(result.data)
                     }
                     is Result.Error -> {
@@ -199,10 +209,12 @@ class ExpenseRepositoryImplHybrid(
                 }
             } catch (e: Exception) {
                 println("Error during cloud fetch: ${e.message}")
+                e.printStackTrace()
             }
         } catch (e: Exception) {
             // Log error but don't crash the app
             println("Initial sync failed: ${e.message}")
+            e.printStackTrace()
         }
     }
     
@@ -214,23 +226,27 @@ class ExpenseRepositoryImplHybrid(
                 return
             }
             
-            println("Starting to sync all local expenses to cloud...")
+            println("Starting to sync all local expenses to cloud for user: $userId")
             val localExpenses = localSource.getAllExpenses()
             localExpenses.collect { databaseExpenses ->
+                println("Found ${databaseExpenses.size} local expenses to sync")
                 databaseExpenses.forEach { dbExpense ->
                     val expense = dbExpense.toDomainExpense()
                     // Skip demo data
                     if (!expense.id.startsWith("sample_expense_")) {
                         try {
-                            println("Syncing local expense ${expense.id} to cloud")
+                            println("Syncing local expense ${expense.id} (${expense.amount} - ${expense.note}) to cloud")
                             val result = cloudSource.syncExpense(expense)
                             when (result) {
-                                is Result.Success -> println("Successfully synced expense ${expense.id}")
-                                is Result.Error -> println("Failed to sync expense ${expense.id}: ${result.error.name}")
+                                is Result.Success -> println("✓ Successfully synced expense ${expense.id}")
+                                is Result.Error -> println("✗ Failed to sync expense ${expense.id}: ${result.error.name}")
                             }
                         } catch (e: Exception) {
-                            println("Error syncing expense ${expense.id}: ${e.message}")
+                            println("✗ Error syncing expense ${expense.id}: ${e.message}")
+                            e.printStackTrace()
                         }
+                    } else {
+                        println("Skipping demo expense: ${expense.id}")
                     }
                 }
                 // Only sync once, not continuously

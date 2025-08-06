@@ -128,12 +128,22 @@ class SupabaseExpenseSource : ExpenseCloudSource {
         )
         
         return try {
-            println("Attempting to sync expense to Supabase: ${expense.id}")
-            supabase.from("expenses").upsert(expense.toSupabaseExpenseInsert(userId))
-            println("Successfully synced expense to Supabase")
+            println("=== SUPABASE SYNC ===")
+            println("Attempting to sync expense to Supabase:")
+            println("  - Expense ID: ${expense.id}")
+            println("  - User ID: $userId")
+            println("  - Amount: ${expense.amount}")
+            println("  - Category: ${expense.category}")
+            println("  - Note: ${expense.note}")
+            
+            val insertData = expense.toSupabaseExpenseInsert(userId)
+            println("Insert data prepared: $insertData")
+            
+            supabase.from("expenses").upsert(insertData)
+            println("✓ Successfully synced expense to Supabase")
             Result.Success(Unit)
         } catch (e: Exception) {
-            println("Failed to sync expense to Supabase: ${e.message}")
+            println("✗ Failed to sync expense to Supabase: ${e.message}")
             e.printStackTrace()
             Result.Error(ExpenseError.CloudSync("Failed to sync expense: ${e.message}"))
         }
@@ -142,13 +152,24 @@ class SupabaseExpenseSource : ExpenseCloudSource {
     // Helper method to fetch all expenses (manual sync)
     suspend fun fetchAllExpenses(): Result<List<Expense>, ExpenseError> {
         return try {
+            val currentUser = getCurrentUserId()
+            println("=== FETCHING EXPENSES FROM SUPABASE ===")
+            println("Current authenticated user: $currentUser")
+            
             val result = supabase.from("expenses")
                 .select(Columns.ALL)
                 .decodeList<SupabaseExpense>()
             
+            println("Raw result from Supabase: ${result.size} expenses")
+            result.forEach { expense ->
+                println("  - ${expense.id}: user=${expense.userId}, amount=${expense.amount}, note=${expense.note}")
+            }
+            
             val expenses = result.map { it.toDomainExpense() }
             Result.Success(expenses)
         } catch (e: Exception) {
+            println("✗ Failed to fetch expenses: ${e.message}")
+            e.printStackTrace()
             Result.Error(ExpenseError.CloudSync("Failed to fetch expenses: ${e.message}"))
         }
     }
