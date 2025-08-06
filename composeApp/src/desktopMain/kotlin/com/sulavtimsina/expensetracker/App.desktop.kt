@@ -37,13 +37,17 @@ actual fun App() {
             // Trigger sync when user becomes authenticated (including app start with existing session)
             LaunchedEffect(isAuthenticated) {
                 if (isAuthenticated && expenseRepository is ExpenseRepositoryImplHybrid) {
+                    // Wait a bit for the auth session to fully establish
+                    kotlinx.coroutines.delay(1000)
+                    println("=== AUTH STATE CHANGED (Desktop) ===")
+                    println("User is authenticated: $isAuthenticated")
                     val result = expenseRepository.triggerSyncForAuthenticatedUser()
                     when (result) {
                         is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
-                            println("Auto-sync started for authenticated user: ${result.data}")
+                            println("✓ Auto-sync started for authenticated user: ${result.data}")
                         }
                         is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
-                            println("Failed to auto-start sync: ${result.error}")
+                            println("✗ Failed to auto-start sync: ${result.error}")
                         }
                     }
                 }

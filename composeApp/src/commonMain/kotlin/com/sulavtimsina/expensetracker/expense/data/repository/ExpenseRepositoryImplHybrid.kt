@@ -66,6 +66,9 @@ class ExpenseRepositoryImplHybrid(
     
     override suspend fun insertExpense(expense: Expense): Result<Unit, ExpenseError> {
         return try {
+            println("=== INSERT EXPENSE ===")
+            println("Inserting expense: ${expense.id} - ${expense.amount} - ${expense.note}")
+            
             // Insert locally first for immediate feedback
             val dbExpense = expense.toDatabaseExpense()
             localSource.insertExpense(
@@ -76,14 +79,34 @@ class ExpenseRepositoryImplHybrid(
                 dbExpense.date,
                 dbExpense.imagePath
             )
+            println("✓ Successfully inserted expense locally")
             
-            // Sync to cloud in background
-            syncScope.launch {
-                syncExpenseToCloud(expense)
+            // Sync to cloud immediately if user is authenticated
+            val currentUserId = cloudSource.getCurrentUserId()
+            if (currentUserId != null) {
+                println("User is authenticated ($currentUserId), syncing immediately...")
+                val syncResult = cloudSource.syncExpense(expense)
+                when (syncResult) {
+                    is Result.Success -> {
+                        println("✓ Successfully synced expense to cloud immediately")
+                        // Force refresh from cloud to ensure all devices see the change
+                        syncScope.launch {
+                            refreshFromCloud()
+                        }
+                    }
+                    is Result.Error -> println("✗ Failed to sync expense immediately: ${syncResult.error}")
+                }
+            } else {
+                println("User not authenticated, will sync later")
+                // Sync in background for anonymous users
+                syncScope.launch {
+                    syncExpenseToCloud(expense)
+                }
             }
             
             Result.Success(Unit)
         } catch (e: Exception) {
+            println("✗ Failed to insert expense: ${e.message}")
             Result.Error(ExpenseError.DatabaseError("Failed to insert expense: ${e.message}"))
         }
     }
@@ -155,6 +178,10 @@ class ExpenseRepositoryImplHybrid(
         return if (userId != null) {
             println("=== SYNC DEBUG ===")
             println("Triggering sync for authenticated user: $userId")
+            
+            // Test Supabase connection immediately
+            testSupabaseConnection()
+            
             println("Starting performInitialSync...")
             syncScope.launch {
                 performInitialSync()
@@ -164,6 +191,29 @@ class ExpenseRepositoryImplHybrid(
             println("=== SYNC ERROR ===")
             println("No authenticated user found when trying to trigger sync")
             Result.Error(ExpenseError.CloudSync("No authenticated user found"))
+        }
+    }
+    
+    private fun testSupabaseConnection() {
+        syncScope.launch {
+            try {
+                println("=== TESTING SUPABASE CONNECTION ===")
+                val result = (cloudSource as? SupabaseExpenseSource)?.fetchAllExpenses()
+                when (result) {
+                    is Result.Success -> {
+                        println("✓ Supabase connection test successful: ${result.data.size} expenses")
+                    }
+                    is Result.Error -> {
+                        println("✗ Supabase connection test failed: ${result.error}")
+                    }
+                    null -> {
+                        println("✗ Could not test connection - cloud source unavailable")
+                    }
+                }
+            } catch (e: Exception) {
+                println("✗ Supabase connection test exception: ${e.message}")
+                e.printStackTrace()
+            }
         }
     }
     
@@ -276,6 +326,27 @@ class ExpenseRepositoryImplHybrid(
             // Log error but don't crash the app
             println("Failed to sync expense to cloud: ${e.message}")
             e.printStackTrace()
+        }
+    }
+    
+    private suspend fun refreshFromCloud() {
+        try {
+            println("=== REFRESH FROM CLOUD ===")
+            val result = (cloudSource as? SupabaseExpenseSource)?.fetchAllExpenses()
+            when (result) {
+                is Result.Success -> {
+                    println("Refreshed ${result.data.size} expenses from cloud")
+                    syncFromCloudToLocal(result.data)
+                }
+                is Result.Error -> {
+                    println("Failed to refresh from cloud: ${result.error}")
+                }
+                null -> {
+                    println("Could not refresh - cloud source not available")
+                }
+            }
+        } catch (e: Exception) {
+            println("Error during cloud refresh: ${e.message}")
         }
     }
     
