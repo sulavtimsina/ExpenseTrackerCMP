@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
 
 class ExpenseRepositoryImplHybrid(
     private val localSource: ExpenseDatabaseSource,
@@ -155,13 +156,52 @@ class ExpenseRepositoryImplHybrid(
     
     private suspend fun performInitialSync() {
         try {
-            // For now, let's focus on syncing from cloud to local
+            // First, sync all local expenses to cloud
+            syncAllLocalExpensesToCloud()
+            
+            // Then sync from cloud to local
             cloudSource.getAllExpenses().collect { cloudExpenses ->
                 syncFromCloudToLocal(cloudExpenses)
             }
         } catch (e: Exception) {
             // Log error but don't crash the app
             println("Initial sync failed: ${e.message}")
+        }
+    }
+    
+    private suspend fun syncAllLocalExpensesToCloud() {
+        try {
+            val userId = cloudSource.getCurrentUserId()
+            if (userId == null) {
+                println("Cannot sync local expenses to cloud: User not authenticated")
+                return
+            }
+            
+            println("Starting to sync all local expenses to cloud...")
+            val localExpenses = localSource.getAllExpenses()
+            localExpenses.collect { databaseExpenses ->
+                databaseExpenses.forEach { dbExpense ->
+                    val expense = dbExpense.toDomainExpense()
+                    // Skip demo data
+                    if (!expense.id.startsWith("sample_expense_")) {
+                        try {
+                            println("Syncing local expense ${expense.id} to cloud")
+                            val result = cloudSource.syncExpense(expense)
+                            when (result) {
+                                is Result.Success -> println("Successfully synced expense ${expense.id}")
+                                is Result.Error -> println("Failed to sync expense ${expense.id}: ${result.error.name}")
+                            }
+                        } catch (e: Exception) {
+                            println("Error syncing expense ${expense.id}: ${e.message}")
+                        }
+                    }
+                }
+                // Only sync once, not continuously
+                return@collect
+            }
+        } catch (e: Exception) {
+            println("Failed to sync local expenses to cloud: ${e.message}")
+            e.printStackTrace()
         }
     }
     
