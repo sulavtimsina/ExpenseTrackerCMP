@@ -4,12 +4,15 @@ import androidx.compose.ui.window.ComposeUIViewController
 import org.koin.core.context.startKoin
 import com.sulavtimsina.expensetracker.di.coreModule
 
+private var koinStarted = false
+
 fun MainViewController() = ComposeUIViewController {
-    // Initialize Koin for iOS
-    if (org.koin.core.context.GlobalContext.getOrNull() == null) {
+    // Initialize Koin for iOS (only once)
+    if (!koinStarted) {
         startKoin {
             modules(coreModule)
         }
+        koinStarted = true
     }
     App()
 }

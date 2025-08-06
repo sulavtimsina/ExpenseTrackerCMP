@@ -17,7 +17,9 @@
       "Bash(supabase start:*)",
       "Bash(adb shell:*)",
       "Bash(cp:*)",
-      "Bash(supabase db reset:*)"
+      "Bash(supabase db reset:*)",
+      "Bash(xcrun xcodebuild:*)",
+      "Bash(xcode-select:*)"
     ],
     "deny": []
   }
