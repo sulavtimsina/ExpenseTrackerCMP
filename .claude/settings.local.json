@@ -12,7 +12,9 @@
       "Bash(sqlite3:*)",
       "Bash(curl:*)",
       "Bash(adb logcat:*)",
-      "Bash(adb shell am start:*)"
+      "Bash(adb shell am start:*)",
+      "Bash(supabase stop:*)",
+      "Bash(supabase start:*)"
     ],
     "deny": []
   }
