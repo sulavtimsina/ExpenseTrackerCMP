@@ -15,12 +15,36 @@ import com.sulavtimsina.expensetracker.expense.presentation.add_edit_expense.Add
 import com.sulavtimsina.expensetracker.expense.presentation.expense_detail.ExpenseDetailScreen
 import com.sulavtimsina.expensetracker.expense.presentation.expense_list.ExpenseListScreen
 import com.sulavtimsina.expensetracker.settings.presentation.SettingsScreen
+import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
+import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
+import org.koin.compose.koinInject
+import kotlinx.coroutines.launch
 
 @Composable
 actual fun App() {
     MaterialTheme {
         val navController = rememberNavController()
         val currentRoute by navController.currentBackStackEntryAsState()
+        
+        // Auto sign-in anonymously on app startup
+        val expenseRepository = koinInject<ExpenseRepository>()
+        val coroutineScope = rememberCoroutineScope()
+        
+        LaunchedEffect(Unit) {
+            coroutineScope.launch {
+                if (expenseRepository is ExpenseRepositoryImplHybrid) {
+                    val result = expenseRepository.signInAndStartSync()
+                    when (result) {
+                        is com.sulavtimsina.expensetracker.core.domain.Result.Success -> {
+                            println("Successfully signed in anonymously: ${result.data}")
+                        }
+                        is com.sulavtimsina.expensetracker.core.domain.Result.Error -> {
+                            println("Failed to sign in anonymously: ${result.error}")
+                        }
+                    }
+                }
+            }
+        }
         
         Scaffold(
             bottomBar = {
