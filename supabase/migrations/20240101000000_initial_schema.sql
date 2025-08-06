@@ -19,10 +19,10 @@ CREATE TYPE expense_category AS ENUM (
 
 -- Create expenses table
 CREATE TABLE IF NOT EXISTS expenses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id TEXT PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
-    category expense_category NOT NULL,
+    category TEXT NOT NULL,
     note TEXT,
     date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     image_path TEXT,

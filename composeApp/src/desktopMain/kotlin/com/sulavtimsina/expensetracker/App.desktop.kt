@@ -17,29 +17,12 @@ import com.sulavtimsina.expensetracker.expense.presentation.expense_list.Expense
 import com.sulavtimsina.expensetracker.settings.presentation.SettingsScreen
 import org.koin.compose.KoinApplication
 import com.sulavtimsina.expensetracker.di.coreModule
-import com.sulavtimsina.expensetracker.data.SampleDataProvider
-import org.koin.compose.koinInject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Composable
 actual fun App() {
     KoinApplication(application = {
         modules(coreModule)
     }) {
-        val sampleDataProvider: SampleDataProvider = koinInject()
-        
-        // Initialize sample data
-        LaunchedEffect(Unit) {
-            withContext(Dispatchers.Default) {
-                try {
-                    sampleDataProvider.insertSampleData()
-                } catch (e: Exception) {
-                    // Handle initialization error silently
-                }
-            }
-        }
-        
         MaterialTheme {
             // Auth handled by Supabase in common code
                 val navController = rememberNavController()

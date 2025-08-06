@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Structure and Main Components</title>
+</head>
+<body>
+  <h1>Project Structure and Main Components</h1>
+  <p>This project is a modern, cross-platform Expense Tracker application built with <strong>Kotlin Multiplatform</strong> and <strong>Compose Multiplatform</strong>. It supports Android, iOS, and desktop platforms, sharing business logic and UI code while allowing platform-specific integration.</p>
+
+  <h2>High-Level Overview</h2>
+  <ul>
+    <li><strong>Shared Module (<code>composeApp/</code>)</strong>: Core business logic, UI components, data layer, and resources shared across platforms.</li>
+    <li><strong>iOS App (<code>iosApp/</code>)</strong>: Native iOS application using SwiftUI and the generated Compose framework.</li>
+    <li><strong>Supabase (<code>supabase/</code>)</strong>: Backend configuration and database migrations for local development with Supabase.</li>
+    <li><strong>Scripts (<code>scripts/</code> & <code>setup.sh</code>)</strong>: Utility scripts to configure the Android build environment and set up the Supabase local environment.</li>
+    <li><strong>Build Configuration</strong>: Gradle wrapper, version catalogs, and root-level Gradle scripts (<code>build.gradle.kts</code>, <code>settings.gradle.kts</code>).</li>
+    <li><strong>Documentation & Assets</strong>: <code>README.md</code>, <code>CONTRIBUTING.md</code>, <code>LICENSE</code>, sample screenshots (<code>screenshots/</code>).</li>
+  </ul>
+
+  <h2>Detailed Directory Layout</h2>
+
+  <h3><code>composeApp/</code> (Shared Multiplatform Module)</h3>
+  <ul>
+    <li><code>src/commonMain</code>: Shared code including:</li>
+    <ul>
+      <li>Business logic and domain (<code>com/sulavtimsina/expensetracker</code>): <code>analytics/</code>, <code>expense/</code>, <code>settings/</code>, <code>core/</code>, <code>data/</code>, <code>di/</code>.</li>
+      <li>SQLDelight schema (<code>sqldelight/</code>) for type-safe database operations.</li>
+      <li>Shared UI components with Compose.</li>
+    </ul>
+    <li><code>src/androidMain</code>: Android-specific code and resource adapters.</li>
+    <li><code>src/iosMain</code>: iOS-specific integration for the Compose framework.</li>
+    <li><code>src/desktopMain</code>: Desktop entry point and app launcher.</li>
+    <li><code>build.gradle.kts</code>: Module build configuration.</li>
+  </ul>
+
+  <h3><code>iosApp/</code> (iOS Application)</h3>
+  <ul>
+    <li><code>iosApp.xcodeproj</code>: Xcode project file.</li>
+    <li><code>iosApp/iosApp</code>: SwiftUI-based UI (<code>ContentView.swift</code>, <code>iOSApp.swift</code>) integrating <code>ComposeApp.framework</code>.</li>
+    <li><code>Configuration/Config.xcconfig</code>: Build settings for Xcode.</li>
+  </ul>
+
+  <h3><code>supabase/</code> (Backend Configuration)</h3>
+  <ul>
+    <li><code>supabase/config.toml</code>: Local Supabase project settings.</li>
+    <li><code>supabase/migrations/</code>: Database migration scripts for setting up tables.</li>
+    <li><code>supabase.env.example</code>: Environment variable template for connecting to Supabase.</li>
+  </ul>
+
+  <h3><code>scripts/</code> &amp; <code>setup.sh</code></h3>
+  <ul>
+    <li><code>setup.sh</code>: Automates Android SDK detection, installation of command-line tools, and generation of <code>local.properties</code> for Android builds.</li>
+    <li><code>scripts/setup-supabase.sh</code> &amp; <code>setup-supabase-simple.sh</code>: Scripts to initialize and run Supabase locally.</li>
+  </ul>
+
+  <h3>Root-Level Configuration</h3>
+  <ul>
+    <li><code>build.gradle.kts</code>: Top-level Gradle build script defining plugins and common tasks.</li>
+    <li><code>settings.gradle.kts</code>: Includes modules (<code>composeApp</code>, <code>iosApp</code>).</li>
+    <li><code>gradle/</code>: Version catalog <code>libs.versions.toml</code> for dependency management.</li>
+    <li><code>gradlew</code> &amp; <code>gradlew.bat</code>: Gradle wrapper scripts.</li>
+    <li><code>gradle.properties</code> &amp; <code>local.properties</code>: Global and local settings (Android SDK path).</li>
+  </ul>
+
+  <h2>Supporting Files</h2>
+  <ul>
+    <li><code>README.md</code>: Project overview, setup instructions, and architecture details.</li>
+    <li><code>CONTRIBUTING.md</code>: Guidelines for contributing to the project.</li>
+    <li><code>LICENSE</code>: MIT License.</li>
+    <li><code>screenshots/</code>: Images showcasing the app on different platforms.</li>
+  </ul>
+</body>
+</html>

@@ -6,6 +6,7 @@ data class SettingsState(
     val selectedCurrency: String = "USD",
     val availableCurrencies: List<String> = listOf("USD", "EUR", "GBP", "JPY", "CAD"),
     val appVersion: String = "1.0.0",
+    val showDemoData: Boolean = false,
     
     // Supabase sync settings
     val isSyncEnabled: Boolean = false,

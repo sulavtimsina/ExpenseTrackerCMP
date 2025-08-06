@@ -7,6 +7,7 @@ sealed interface SettingsAction {
     data object OnExportData : SettingsAction
     data object OnClearData : SettingsAction
     data object OnAbout : SettingsAction
+    data object OnDemoDataToggle : SettingsAction
     
     // Supabase sync actions
     data object OnSignIn : SettingsAction

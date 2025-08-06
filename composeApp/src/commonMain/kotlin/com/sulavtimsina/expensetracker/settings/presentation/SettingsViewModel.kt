@@ -6,12 +6,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sulavtimsina.expensetracker.core.domain.Result
+import com.sulavtimsina.expensetracker.data.SampleDataProvider
 import com.sulavtimsina.expensetracker.expense.data.repository.ExpenseRepositoryImplHybrid
+import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
 class SettingsViewModel(
-    private val expenseRepository: ExpenseRepositoryImplHybrid
+    private val expenseRepository: ExpenseRepository,
+    private val sampleDataProvider: SampleDataProvider
 ) : ViewModel() {
     
     var state by mutableStateOf(SettingsState())
@@ -32,6 +36,9 @@ class SettingsViewModel(
                 state = state.copy(
                     notificationsEnabled = !state.notificationsEnabled
                 )
+            }
+            is SettingsAction.OnDemoDataToggle -> {
+                toggleDemoData()
             }
             is SettingsAction.OnCurrencyChange -> {
                 // This would typically open a selection dialog
@@ -82,7 +89,8 @@ class SettingsViewModel(
         viewModelScope.launch {
             state = state.copy(syncInProgress = true, syncError = null)
             
-            val result = expenseRepository.signInAndStartSync()
+            val result = (expenseRepository as? ExpenseRepositoryImplHybrid)?.signInAndStartSync()
+                ?: return@launch
             
             when (result) {
                 is Result.Success -> {
@@ -151,5 +159,31 @@ class SettingsViewModel(
                 )
             }
         }
+    }
+    
+    private fun toggleDemoData() {
+        viewModelScope.launch {
+            val newShowDemoData = !state.showDemoData
+            state = state.copy(showDemoData = newShowDemoData)
+            
+            if (newShowDemoData) {
+                // Load demo data
+                sampleDataProvider.insertSampleData()
+            } else {
+                // Remove demo data (delete all expenses with sample_expense_ prefix)
+                deleteSampleData()
+            }
+        }
+    }
+    
+    private suspend fun deleteSampleData() {
+        // Delete all sample expenses (those with IDs starting with "sample_expense_")
+        val allExpenses = expenseRepository.getAllExpenses().first()
+        
+        allExpenses
+            .filter { it.id.startsWith("sample_expense_") }
+            .forEach { expense ->
+                expenseRepository.deleteExpense(expense.id)
+            }
     }
 }

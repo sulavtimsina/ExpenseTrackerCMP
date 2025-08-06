@@ -59,9 +59,17 @@ class SupabaseExpenseSource : ExpenseCloudSource {
         )
         
         return try {
-            supabase.from("expenses").insert(expense.toSupabaseExpenseInsert(userId))
+            println("Attempting to insert expense to Supabase: ${expense.id}")
+            println("User ID: $userId")
+            val supabaseExpense = expense.toSupabaseExpenseInsert(userId)
+            println("Supabase expense data: $supabaseExpense")
+            
+            supabase.from("expenses").insert(supabaseExpense)
+            println("Successfully inserted expense to Supabase")
             Result.Success(Unit)
         } catch (e: Exception) {
+            println("Failed to insert expense to Supabase: ${e.message}")
+            e.printStackTrace()
             Result.Error(ExpenseError.CloudSync("Failed to insert expense: ${e.message}"))
         }
     }
@@ -99,9 +107,13 @@ class SupabaseExpenseSource : ExpenseCloudSource {
         )
         
         return try {
+            println("Attempting to sync expense to Supabase: ${expense.id}")
             supabase.from("expenses").upsert(expense.toSupabaseExpenseInsert(userId))
+            println("Successfully synced expense to Supabase")
             Result.Success(Unit)
         } catch (e: Exception) {
+            println("Failed to sync expense to Supabase: ${e.message}")
+            e.printStackTrace()
             Result.Error(ExpenseError.CloudSync("Failed to sync expense: ${e.message}"))
         }
     }

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(rm:*)",
+      "Bash(timeout:*)",
+      "Bash(ls:*)",
+      "Bash(pkill:*)",
+      "Bash(sqlite3:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": []
+  }
+}

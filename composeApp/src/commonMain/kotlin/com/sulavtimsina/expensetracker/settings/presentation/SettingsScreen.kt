@@ -160,6 +160,14 @@ fun SettingsScreen(
             
             // Data Section
             SettingsSection(title = "Data Management") {
+                SettingsSwitchItem(
+                    title = "Show Demo Data",
+                    subtitle = "Display sample expenses for testing",
+                    checked = state.showDemoData,
+                    onCheckedChange = { viewModel.onAction(SettingsAction.OnDemoDataToggle) },
+                    icon = Icons.Default.Storage
+                )
+                
                 SettingsClickableItem(
                     title = "Export Data",
                     subtitle = "Export your expenses to CSV",
