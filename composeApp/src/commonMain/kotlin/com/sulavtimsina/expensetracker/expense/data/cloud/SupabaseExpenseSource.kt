@@ -14,6 +14,7 @@ import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 
 class SupabaseExpenseSource : ExpenseCloudSource {
     
@@ -21,15 +22,26 @@ class SupabaseExpenseSource : ExpenseCloudSource {
     
     override suspend fun signInAnonymously(): Result<String, ExpenseError> {
         return try {
+            // Check if already signed in
+            val existingUserId = supabase.auth.currentUserOrNull()?.id
+            if (existingUserId != null) {
+                println("Already signed in with user: $existingUserId")
+                return Result.Success(existingUserId)
+            }
+            
+            // Sign in anonymously
             supabase.auth.signInAnonymously()
+            
             // After sign in, get the current user ID
             val userId = supabase.auth.currentUserOrNull()?.id
             if (userId != null) {
+                println("New anonymous sign-in successful: $userId")
                 Result.Success(userId)
             } else {
                 Result.Error(ExpenseError.CloudSync("Failed to get user ID after sign in"))
             }
         } catch (e: Exception) {
+            println("Sign-in failed: ${e.message}")
             Result.Error(ExpenseError.CloudSync("Failed to sign in: ${e.message}"))
         }
     }
@@ -42,10 +54,19 @@ class SupabaseExpenseSource : ExpenseCloudSource {
         val userId = getCurrentUserId()
         return if (userId != null) {
             try {
-                // For now, return empty flow until we implement proper real-time sync
-                // This will be a simple polling mechanism
-                flowOf(emptyList())
+                // Fetch expenses from Supabase
+                flow {
+                    val result = fetchAllExpenses()
+                    when (result) {
+                        is Result.Success -> emit(result.data)
+                        is Result.Error -> {
+                            println("Failed to fetch expenses: ${result.error}")
+                            emit(emptyList())
+                        }
+                    }
+                }
             } catch (e: Exception) {
+                println("Error in getAllExpenses: ${e.message}")
                 flowOf(emptyList())
             }
         } else {

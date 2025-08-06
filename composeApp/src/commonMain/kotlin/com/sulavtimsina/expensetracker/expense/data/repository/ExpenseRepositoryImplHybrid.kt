@@ -2,6 +2,7 @@ package com.sulavtimsina.expensetracker.expense.data.repository
 
 import com.sulavtimsina.expensetracker.core.domain.Result
 import com.sulavtimsina.expensetracker.expense.data.cloud.ExpenseCloudSource
+import com.sulavtimsina.expensetracker.expense.data.cloud.SupabaseExpenseSource
 import com.sulavtimsina.expensetracker.expense.data.mappers.toDatabaseExpense
 import com.sulavtimsina.expensetracker.expense.data.database.ExpenseDatabaseSource
 import com.sulavtimsina.expensetracker.expense.data.mappers.toDomainExpense
@@ -159,9 +160,23 @@ class ExpenseRepositoryImplHybrid(
             // First, sync all local expenses to cloud
             syncAllLocalExpensesToCloud()
             
-            // Then sync from cloud to local
-            cloudSource.getAllExpenses().collect { cloudExpenses ->
-                syncFromCloudToLocal(cloudExpenses)
+            // Then sync from cloud to local - only collect once for initial sync
+            try {
+                val result = (cloudSource as? SupabaseExpenseSource)?.fetchAllExpenses()
+                when (result) {
+                    is Result.Success -> {
+                        println("Fetched ${result.data.size} expenses from cloud")
+                        syncFromCloudToLocal(result.data)
+                    }
+                    is Result.Error -> {
+                        println("Failed to fetch expenses from cloud: ${result.error}")
+                    }
+                    null -> {
+                        println("Could not fetch expenses - cloud source not available")
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error during cloud fetch: ${e.message}")
             }
         } catch (e: Exception) {
             // Log error but don't crash the app
