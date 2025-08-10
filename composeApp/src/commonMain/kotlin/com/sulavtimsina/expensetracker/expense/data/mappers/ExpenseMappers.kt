@@ -12,7 +12,7 @@ fun DatabaseExpense.toDomainExpense(): Expense {
         category = ExpenseCategory.fromDisplayName(category),
         note = note,
         date = LocalDateTime.parse(date),
-        imagePath = imagePath
+        imagePath = imagePath,
     )
 }
 
@@ -23,6 +23,6 @@ fun Expense.toDatabaseExpense(): DatabaseExpense {
         category = category.displayName,
         note = note,
         date = date.toString(),
-        imagePath = imagePath
+        imagePath = imagePath,
     )
 }

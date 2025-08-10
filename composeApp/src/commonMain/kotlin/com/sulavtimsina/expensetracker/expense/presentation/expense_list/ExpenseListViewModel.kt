@@ -15,9 +15,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ExpenseListViewModel(
-    private val expenseRepository: ExpenseRepository
+    private val expenseRepository: ExpenseRepository,
 ) : ViewModel() {
-
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
@@ -30,30 +29,32 @@ class ExpenseListViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
-    val expenses = combine(
-        expenseRepository.getAllExpenses(),
-        _searchQuery,
-        _selectedCategory
-    ) { expenses, query, category ->
-        var filteredExpenses = expenses
+    val expenses =
+        combine(
+            expenseRepository.getAllExpenses(),
+            _searchQuery,
+            _selectedCategory,
+        ) { expenses, query, category ->
+            var filteredExpenses = expenses
 
-        if (category != null) {
-            filteredExpenses = filteredExpenses.filter { it.category == category }
-        }
-
-        if (query.isNotBlank()) {
-            filteredExpenses = filteredExpenses.filter {
-                it.note?.contains(query, ignoreCase = true) == true ||
-                        it.category.displayName.contains(query, ignoreCase = true)
+            if (category != null) {
+                filteredExpenses = filteredExpenses.filter { it.category == category }
             }
-        }
 
-        filteredExpenses
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+            if (query.isNotBlank()) {
+                filteredExpenses =
+                    filteredExpenses.filter {
+                        it.note?.contains(query, ignoreCase = true) == true ||
+                            it.category.displayName.contains(query, ignoreCase = true)
+                    }
+            }
+
+            filteredExpenses
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList(),
+        )
 
     fun onAction(action: ExpenseListAction) {
         when (action) {

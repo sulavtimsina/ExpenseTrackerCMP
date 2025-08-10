@@ -9,17 +9,17 @@ import kotlin.test.assertNull
 import com.sulavtimsina.expensetracker.database.Expense as DatabaseExpense
 
 class ExpenseMappersTest {
-
     @Test
     fun `toDomainExpense maps all fields correctly`() {
-        val databaseExpense = DatabaseExpense(
-            id = "1",
-            amount = 25.50,
-            category = "Food",
-            note = "Lunch",
-            date = "2024-01-15T12:30:00",
-            imagePath = "/path/to/image.jpg"
-        )
+        val databaseExpense =
+            DatabaseExpense(
+                id = "1",
+                amount = 25.50,
+                category = "Food",
+                note = "Lunch",
+                date = "2024-01-15T12:30:00",
+                imagePath = "/path/to/image.jpg",
+            )
 
         val domainExpense = databaseExpense.toDomainExpense()
 
@@ -33,14 +33,15 @@ class ExpenseMappersTest {
 
     @Test
     fun `toDomainExpense handles null fields`() {
-        val databaseExpense = DatabaseExpense(
-            id = "2",
-            amount = 100.0,
-            category = "Bills",
-            note = null,
-            date = "2024-01-15T12:30:00",
-            imagePath = null
-        )
+        val databaseExpense =
+            DatabaseExpense(
+                id = "2",
+                amount = 100.0,
+                category = "Bills",
+                note = null,
+                date = "2024-01-15T12:30:00",
+                imagePath = null,
+            )
 
         val domainExpense = databaseExpense.toDomainExpense()
 
@@ -53,14 +54,15 @@ class ExpenseMappersTest {
 
     @Test
     fun `toDatabaseExpense maps all fields correctly`() {
-        val domainExpense = Expense(
-            id = "3",
-            amount = 50.0,
-            category = ExpenseCategory.TRANSPORTATION,
-            note = "Bus ticket",
-            date = LocalDateTime(2024, 1, 15, 12, 30),
-            imagePath = "/path/to/ticket.jpg"
-        )
+        val domainExpense =
+            Expense(
+                id = "3",
+                amount = 50.0,
+                category = ExpenseCategory.TRANSPORTATION,
+                note = "Bus ticket",
+                date = LocalDateTime(2024, 1, 15, 12, 30),
+                imagePath = "/path/to/ticket.jpg",
+            )
 
         val databaseExpense = domainExpense.toDatabaseExpense()
 
@@ -74,14 +76,15 @@ class ExpenseMappersTest {
 
     @Test
     fun `toDatabaseExpense handles null fields`() {
-        val domainExpense = Expense(
-            id = "4",
-            amount = 75.0,
-            category = ExpenseCategory.OTHER,
-            note = null,
-            date = LocalDateTime(2024, 1, 15, 12, 30),
-            imagePath = null
-        )
+        val domainExpense =
+            Expense(
+                id = "4",
+                amount = 75.0,
+                category = ExpenseCategory.OTHER,
+                note = null,
+                date = LocalDateTime(2024, 1, 15, 12, 30),
+                imagePath = null,
+            )
 
         val databaseExpense = domainExpense.toDatabaseExpense()
 
@@ -94,14 +97,15 @@ class ExpenseMappersTest {
 
     @Test
     fun `roundtrip conversion preserves data`() {
-        val originalExpense = Expense(
-            id = "5",
-            amount = 42.99,
-            category = ExpenseCategory.ENTERTAINMENT,
-            note = "Movie ticket",
-            date = LocalDateTime(2024, 1, 15, 19, 45),
-            imagePath = "/path/to/receipt.jpg"
-        )
+        val originalExpense =
+            Expense(
+                id = "5",
+                amount = 42.99,
+                category = ExpenseCategory.ENTERTAINMENT,
+                note = "Movie ticket",
+                date = LocalDateTime(2024, 1, 15, 19, 45),
+                imagePath = "/path/to/receipt.jpg",
+            )
 
         val roundtripExpense = originalExpense.toDatabaseExpense().toDomainExpense()
 

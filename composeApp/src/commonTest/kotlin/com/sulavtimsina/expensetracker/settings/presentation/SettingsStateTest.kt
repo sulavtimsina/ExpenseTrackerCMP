@@ -3,7 +3,6 @@ package com.sulavtimsina.expensetracker.settings.presentation
 import kotlin.test.*
 
 class SettingsStateTest {
-
     @Test
     fun `SettingsState has correct default values`() {
         // When
@@ -26,19 +25,20 @@ class SettingsStateTest {
     @Test
     fun `SettingsState can be created with custom values`() {
         // When
-        val state = SettingsState(
-            isDarkTheme = true,
-            notificationsEnabled = false,
-            selectedCurrency = "EUR",
-            availableCurrencies = listOf("EUR", "USD"),
-            appVersion = "2.0.0",
-            isSyncEnabled = true,
-            isSignedIn = true,
-            userId = "user123",
-            lastSyncTime = "2024-01-15T12:00:00",
-            syncInProgress = true,
-            syncError = "Test error"
-        )
+        val state =
+            SettingsState(
+                isDarkTheme = true,
+                notificationsEnabled = false,
+                selectedCurrency = "EUR",
+                availableCurrencies = listOf("EUR", "USD"),
+                appVersion = "2.0.0",
+                isSyncEnabled = true,
+                isSignedIn = true,
+                userId = "user123",
+                lastSyncTime = "2024-01-15T12:00:00",
+                syncInProgress = true,
+                syncError = "Test error",
+            )
 
         // Then
         assertTrue(state.isDarkTheme)
@@ -60,17 +60,18 @@ class SettingsStateTest {
         val originalState = SettingsState()
 
         // When
-        val copiedState = originalState.copy(
-            isDarkTheme = true,
-            selectedCurrency = "EUR",
-            isSignedIn = true
-        )
+        val copiedState =
+            originalState.copy(
+                isDarkTheme = true,
+                selectedCurrency = "EUR",
+                isSignedIn = true,
+            )
 
         // Then
         assertTrue(copiedState.isDarkTheme)
         assertEquals("EUR", copiedState.selectedCurrency)
         assertTrue(copiedState.isSignedIn)
-        
+
         // Other values should remain the same as defaults
         assertTrue(copiedState.notificationsEnabled)
         assertEquals("1.0.0", copiedState.appVersion)
@@ -93,14 +94,15 @@ class SettingsStateTest {
     @Test
     fun `SettingsState with all sync properties set`() {
         // When
-        val state = SettingsState(
-            isSyncEnabled = true,
-            isSignedIn = true,
-            userId = "test-user-id",
-            lastSyncTime = "2024-01-15T10:30:00",
-            syncInProgress = false,
-            syncError = null
-        )
+        val state =
+            SettingsState(
+                isSyncEnabled = true,
+                isSignedIn = true,
+                userId = "test-user-id",
+                lastSyncTime = "2024-01-15T10:30:00",
+                syncInProgress = false,
+                syncError = null,
+            )
 
         // Then
         assertTrue(state.isSyncEnabled)
@@ -114,9 +116,10 @@ class SettingsStateTest {
     @Test
     fun `SettingsState with sync error`() {
         // When
-        val state = SettingsState(
-            syncError = "Network connection failed"
-        )
+        val state =
+            SettingsState(
+                syncError = "Network connection failed",
+            )
 
         // Then
         assertEquals("Network connection failed", state.syncError)

@@ -13,41 +13,45 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) {
     private val viewModelScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    
+
     private val _isAuthenticated = MutableStateFlow(false)
     val isAuthenticated = _isAuthenticated.asStateFlow()
-    
+
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId = _currentUserId.asStateFlow()
-    
+
     var isLoading by mutableStateOf(false)
         private set
-    
+
     var errorMessage by mutableStateOf<String?>(null)
         private set
-    
+
     init {
         viewModelScope.launch {
             authRepository.isAuthenticated.collect { authenticated ->
                 _isAuthenticated.value = authenticated
             }
         }
-        
+
         viewModelScope.launch {
             authRepository.currentUser.collect { userId ->
                 _currentUserId.value = userId
             }
         }
     }
-    
-    fun signIn(email: String, password: String, onSuccess: () -> Unit) {
+
+    fun signIn(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+    ) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
-            
+
             val result = authRepository.signIn(email, password)
             when (result) {
                 is Result.Success -> {
@@ -61,12 +65,16 @@ class AuthViewModel(
             }
         }
     }
-    
-    fun signUp(email: String, password: String, onSuccess: () -> Unit) {
+
+    fun signUp(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+    ) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
-            
+
             val result = authRepository.signUp(email, password)
             when (result) {
                 is Result.Success -> {
@@ -80,12 +88,12 @@ class AuthViewModel(
             }
         }
     }
-    
+
     fun signInAnonymously(onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
-            
+
             val result = authRepository.signInAnonymously()
             when (result) {
                 is Result.Success -> {
@@ -99,13 +107,13 @@ class AuthViewModel(
             }
         }
     }
-    
+
     fun signOut() {
         viewModelScope.launch {
             authRepository.signOut()
         }
     }
-    
+
     fun clearError() {
         errorMessage = null
     }

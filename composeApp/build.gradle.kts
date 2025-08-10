@@ -20,18 +20,18 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
         }
     }
-    
+
     jvm("desktop")
 
     sourceSets {
@@ -42,7 +42,7 @@ kotlin {
 
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -50,10 +50,10 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.sqldelight.driver.android)
-            
+
             // Ktor client engine for Android
             implementation(libs.ktor.client.android)
-            
+
             // Firebase removed - using Supabase instead
         }
         commonMain.dependencies {
@@ -79,13 +79,13 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.compose.core)
-            
+
             // Supabase KMP - Cross-platform backend
             implementation(libs.supabase.kt)
             implementation(libs.supabase.postgrest)
             implementation(libs.supabase.realtime)
             implementation(libs.supabase.auth)
-            
+
             // Ktor client core for HTTP requests
             implementation(libs.ktor.client.core)
         }
@@ -93,13 +93,13 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.sqldelight.driver.sqlite)
-            
+
             // Ktor client engine for JVM/Desktop
             implementation(libs.ktor.client.java)
         }
         nativeMain.dependencies {
             implementation(libs.sqldelight.driver.native)
-            
+
             // Ktor client engine for iOS/Native
             implementation(libs.ktor.client.darwin)
         }

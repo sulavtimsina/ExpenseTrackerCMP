@@ -21,7 +21,13 @@
       "Bash(xcrun xcodebuild:*)",
       "Bash(xcode-select:*)",
       "Bash(npx supabase db dump:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

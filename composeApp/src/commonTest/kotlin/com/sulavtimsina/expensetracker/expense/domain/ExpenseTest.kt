@@ -7,17 +7,17 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class ExpenseTest {
-
     @Test
     fun `expense creation with all fields`() {
-        val expense = Expense(
-            id = "1",
-            amount = 25.50,
-            category = ExpenseCategory.FOOD,
-            note = "Lunch at restaurant",
-            date = LocalDateTime(2024, 1, 15, 12, 30),
-            imagePath = "/path/to/receipt.jpg"
-        )
+        val expense =
+            Expense(
+                id = "1",
+                amount = 25.50,
+                category = ExpenseCategory.FOOD,
+                note = "Lunch at restaurant",
+                date = LocalDateTime(2024, 1, 15, 12, 30),
+                imagePath = "/path/to/receipt.jpg",
+            )
 
         assertEquals("1", expense.id)
         assertEquals(25.50, expense.amount)
@@ -29,14 +29,15 @@ class ExpenseTest {
 
     @Test
     fun `expense creation without optional fields`() {
-        val expense = Expense(
-            id = "2",
-            amount = 100.0,
-            category = ExpenseCategory.BILLS,
-            note = null,
-            date = LocalDateTime(2024, 1, 15, 12, 30),
-            imagePath = null
-        )
+        val expense =
+            Expense(
+                id = "2",
+                amount = 100.0,
+                category = ExpenseCategory.BILLS,
+                note = null,
+                date = LocalDateTime(2024, 1, 15, 12, 30),
+                imagePath = null,
+            )
 
         assertEquals("2", expense.id)
         assertEquals(100.0, expense.amount)

@@ -3,7 +3,6 @@ package com.sulavtimsina.expensetracker.settings.presentation
 import kotlin.test.*
 
 class SettingsActionTest {
-
     @Test
     fun `OnThemeToggle is data object`() {
         // Given
@@ -128,19 +127,20 @@ class SettingsActionTest {
     @Test
     fun `all actions implement SettingsAction interface`() {
         // Given
-        val actions: List<SettingsAction> = listOf(
-            SettingsAction.OnThemeToggle,
-            SettingsAction.OnNotificationsToggle,
-            SettingsAction.OnCurrencyChange,
-            SettingsAction.OnExportData,
-            SettingsAction.OnClearData,
-            SettingsAction.OnAbout,
-            SettingsAction.OnSignIn,
-            SettingsAction.OnSignOut,
-            SettingsAction.OnToggleSync,
-            SettingsAction.OnManualSync,
-            SettingsAction.OnClearSyncError
-        )
+        val actions: List<SettingsAction> =
+            listOf(
+                SettingsAction.OnThemeToggle,
+                SettingsAction.OnNotificationsToggle,
+                SettingsAction.OnCurrencyChange,
+                SettingsAction.OnExportData,
+                SettingsAction.OnClearData,
+                SettingsAction.OnAbout,
+                SettingsAction.OnSignIn,
+                SettingsAction.OnSignOut,
+                SettingsAction.OnToggleSync,
+                SettingsAction.OnManualSync,
+                SettingsAction.OnClearSyncError,
+            )
 
         // Then
         actions.forEach { action ->
@@ -151,19 +151,20 @@ class SettingsActionTest {
     @Test
     fun `different actions are not equal`() {
         // Given
-        val actions = listOf(
-            SettingsAction.OnThemeToggle,
-            SettingsAction.OnNotificationsToggle,
-            SettingsAction.OnCurrencyChange,
-            SettingsAction.OnExportData,
-            SettingsAction.OnClearData,
-            SettingsAction.OnAbout,
-            SettingsAction.OnSignIn,
-            SettingsAction.OnSignOut,
-            SettingsAction.OnToggleSync,
-            SettingsAction.OnManualSync,
-            SettingsAction.OnClearSyncError
-        )
+        val actions =
+            listOf(
+                SettingsAction.OnThemeToggle,
+                SettingsAction.OnNotificationsToggle,
+                SettingsAction.OnCurrencyChange,
+                SettingsAction.OnExportData,
+                SettingsAction.OnClearData,
+                SettingsAction.OnAbout,
+                SettingsAction.OnSignIn,
+                SettingsAction.OnSignOut,
+                SettingsAction.OnToggleSync,
+                SettingsAction.OnManualSync,
+                SettingsAction.OnClearSyncError,
+            )
 
         // Then
         for (i in actions.indices) {
@@ -178,13 +179,14 @@ class SettingsActionTest {
     @Test
     fun `actions have meaningful toString representations`() {
         // Given
-        val actions = listOf(
-            SettingsAction.OnThemeToggle,
-            SettingsAction.OnNotificationsToggle,
-            SettingsAction.OnCurrencyChange,
-            SettingsAction.OnSignIn,
-            SettingsAction.OnSignOut
-        )
+        val actions =
+            listOf(
+                SettingsAction.OnThemeToggle,
+                SettingsAction.OnNotificationsToggle,
+                SettingsAction.OnCurrencyChange,
+                SettingsAction.OnSignIn,
+                SettingsAction.OnSignOut,
+            )
 
         // Then
         actions.forEach { action ->
@@ -199,25 +201,26 @@ class SettingsActionTest {
     fun `SettingsAction is sealed interface`() {
         // This test verifies that all known actions are covered
         // and that SettingsAction is properly sealed
-        
+
         val action: SettingsAction = SettingsAction.OnThemeToggle
-        
+
         // Should be able to use when expression exhaustively
-        val result = when (action) {
-            SettingsAction.OnThemeToggle -> "theme"
-            SettingsAction.OnNotificationsToggle -> "notifications"
-            SettingsAction.OnCurrencyChange -> "currency"
-            SettingsAction.OnExportData -> "export"
-            SettingsAction.OnClearData -> "clear"
-            SettingsAction.OnAbout -> "about"
-            SettingsAction.OnSignIn -> "signin"
-            SettingsAction.OnSignOut -> "signout"
-            SettingsAction.OnDemoDataToggle -> "demo"
-            SettingsAction.OnToggleSync -> "sync"
-            SettingsAction.OnManualSync -> "manual"
-            SettingsAction.OnClearSyncError -> "clear_error"
-        }
-        
+        val result =
+            when (action) {
+                SettingsAction.OnThemeToggle -> "theme"
+                SettingsAction.OnNotificationsToggle -> "notifications"
+                SettingsAction.OnCurrencyChange -> "currency"
+                SettingsAction.OnExportData -> "export"
+                SettingsAction.OnClearData -> "clear"
+                SettingsAction.OnAbout -> "about"
+                SettingsAction.OnSignIn -> "signin"
+                SettingsAction.OnSignOut -> "signout"
+                SettingsAction.OnDemoDataToggle -> "demo"
+                SettingsAction.OnToggleSync -> "sync"
+                SettingsAction.OnManualSync -> "manual"
+                SettingsAction.OnClearSyncError -> "clear_error"
+            }
+
         assertEquals("theme", result)
     }
 }

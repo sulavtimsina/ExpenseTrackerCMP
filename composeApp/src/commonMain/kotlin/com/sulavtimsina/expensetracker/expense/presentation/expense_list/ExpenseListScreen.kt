@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sulavtimsina.expensetracker.expense.domain.Expense
 import com.sulavtimsina.expensetracker.expense.presentation.components.CategoryFilterChips
 import com.sulavtimsina.expensetracker.expense.presentation.components.ExpenseCard
 import org.koin.compose.viewmodel.koinViewModel
@@ -26,7 +25,7 @@ fun ExpenseListScreen(
     onNavigateToExpenseDetail: (String) -> Unit,
     onNavigateToAnalytics: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ExpenseListViewModel = koinViewModel()
+    viewModel: ExpenseListViewModel = koinViewModel(),
 ) {
     val expenses by viewModel.expenses.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -47,58 +46,60 @@ fun ExpenseListScreen(
                     Text(
                         "Expense Tracker",
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 backgroundColor = MaterialTheme.colors.primary,
                 contentColor = MaterialTheme.colors.onPrimary,
                 actions = {
                     IconButton(
-                        onClick = onNavigateToAnalytics
+                        onClick = onNavigateToAnalytics,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "Analytics",
-                            tint = MaterialTheme.colors.onPrimary
+                            tint = MaterialTheme.colors.onPrimary,
                         )
                     }
-                }
+                },
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddExpense,
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = MaterialTheme.colors.onPrimary
+                contentColor = MaterialTheme.colors.onPrimary,
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add Expense"
+                    contentDescription = "Add Expense",
                 )
             }
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onAction(ExpenseListAction.OnSearchQueryChange(it)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 placeholder = { Text("Search expenses...") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
+                        contentDescription = "Search",
                     )
                 },
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
             )
 
             // Category Filter
@@ -107,7 +108,7 @@ fun ExpenseListScreen(
                 onCategorySelected = { category ->
                     viewModel.onAction(ExpenseListAction.OnCategoryFilter(category))
                 },
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             )
 
             // Expense List
@@ -115,7 +116,7 @@ fun ExpenseListScreen(
                 isLoading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
                     }
@@ -123,20 +124,20 @@ fun ExpenseListScreen(
                 expenses.isEmpty() -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
                                 "No expenses found",
                                 fontSize = 18.sp,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                             )
                             Text(
                                 "Tap + to add your first expense",
                                 fontSize = 14.sp,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f),
                             )
                         }
                     }
@@ -144,18 +145,18 @@ fun ExpenseListScreen(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 80.dp)
+                        contentPadding = PaddingValues(bottom = 80.dp),
                     ) {
                         items(
                             items = expenses,
-                            key = { it.id }
+                            key = { it.id },
                         ) { expense ->
                             ExpenseCard(
                                 expense = expense,
                                 onExpenseClick = { onNavigateToExpenseDetail(it.id) },
-                                onDeleteExpense = { 
+                                onDeleteExpense = {
                                     viewModel.onAction(ExpenseListAction.OnDeleteExpense(it))
-                                }
+                                },
                             )
                         }
                     }
@@ -172,4 +173,3 @@ fun ExpenseListScreen(
         }
     }
 }
-

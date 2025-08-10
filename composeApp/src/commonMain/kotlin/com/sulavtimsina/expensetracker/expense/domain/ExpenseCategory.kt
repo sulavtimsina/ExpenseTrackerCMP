@@ -9,7 +9,8 @@ enum class ExpenseCategory(val displayName: String) {
     HEALTHCARE("Healthcare"),
     EDUCATION("Education"),
     TRAVEL("Travel"),
-    OTHER("Other");
+    OTHER("Other"),
+    ;
 
     companion object {
         fun fromDisplayName(displayName: String): ExpenseCategory {

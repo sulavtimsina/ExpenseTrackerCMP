@@ -25,7 +25,7 @@ fun ExpenseDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ExpenseDetailViewModel = koinViewModel()
+    viewModel: ExpenseDetailViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -47,48 +47,48 @@ fun ExpenseDetailScreen(
                     Text(
                         "Expense Details",
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
                 },
                 actions = {
                     if (state.expense != null) {
                         IconButton(
-                            onClick = { onNavigateToEdit(expenseId) }
+                            onClick = { onNavigateToEdit(expenseId) },
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit"
+                                contentDescription = "Edit",
                             )
                         }
                         IconButton(
-                            onClick = { showDeleteDialog = true }
+                            onClick = { showDeleteDialog = true },
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
-                                tint = Color.Red
+                                tint = Color.Red,
                             )
                         }
                     }
                 },
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = MaterialTheme.colors.onPrimary
+                contentColor = MaterialTheme.colors.onPrimary,
             )
-        }
+        },
     ) { paddingValues ->
         when {
             state.isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
@@ -96,20 +96,21 @@ fun ExpenseDetailScreen(
             state.expense != null -> {
                 ExpenseDetailContent(
                     expense = state.expense!!,
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
+                    modifier =
+                        modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
                 )
             }
             else -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         "Expense not found",
                         fontSize = 18.sp,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                     )
                 }
             }
@@ -127,7 +128,7 @@ fun ExpenseDetailScreen(
                     onClick = {
                         viewModel.onAction(ExpenseDetailAction.OnDeleteExpense)
                         showDeleteDialog = false
-                    }
+                    },
                 ) {
                     Text("Delete", color = Color.Red)
                 }
@@ -136,7 +137,7 @@ fun ExpenseDetailScreen(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text("Cancel")
                 }
-            }
+            },
         )
     }
 
@@ -152,34 +153,35 @@ fun ExpenseDetailScreen(
 @Composable
 private fun ExpenseDetailContent(
     expense: Expense,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier =
+            modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Amount Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            elevation = 4.dp
+            elevation = 4.dp,
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "Amount",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                 )
                 Text(
                     text = "$${expense.amount}",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary
+                    color = MaterialTheme.colors.primary,
                 )
             }
         }
@@ -188,16 +190,19 @@ private fun ExpenseDetailContent(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            elevation = 4.dp
+            elevation = 4.dp,
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 DetailRow(label = "Category", value = expense.category.displayName)
                 DetailRow(
-                    label = "Date", 
-                    value = "${expense.date.year}-${expense.date.monthNumber.toString().padStart(2, '0')}-${expense.date.dayOfMonth.toString().padStart(2, '0')}"
+                    label = "Date",
+                    value = "${expense.date.year}-${expense.date.monthNumber.toString().padStart(
+                        2,
+                        '0',
+                    )}-${expense.date.dayOfMonth.toString().padStart(2, '0')}",
                 )
                 if (expense.note != null) {
                     DetailRow(label = "Note", value = expense.note)
@@ -213,16 +218,16 @@ private fun ExpenseDetailContent(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                elevation = 4.dp
+                elevation = 4.dp,
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     Text(
                         text = "Receipt",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colors.onSurface
+                        color = MaterialTheme.colors.onSurface,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     // Here you would display the actual image
@@ -230,7 +235,7 @@ private fun ExpenseDetailContent(
                     Text(
                         text = "Image path: $imagePath",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                     )
                 }
             }
@@ -242,18 +247,18 @@ private fun ExpenseDetailContent(
 private fun DetailRow(
     label: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         Text(
             text = label,
             fontSize = 12.sp,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
         )
         Text(
             text = value,
             fontSize = 16.sp,
-            color = MaterialTheme.colors.onSurface
+            color = MaterialTheme.colors.onSurface,
         )
     }
 }

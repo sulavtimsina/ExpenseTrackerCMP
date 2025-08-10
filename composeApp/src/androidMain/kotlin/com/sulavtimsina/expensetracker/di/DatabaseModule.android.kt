@@ -7,18 +7,19 @@ import com.sulavtimsina.expensetracker.database.ExpenseDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
-actual val databaseModule = module {
-    single<SqlDriver> {
-        AndroidSqliteDriver(
-            schema = ExpenseDatabase.Schema,
-            context = androidContext(),
-            name = "expense.db"
-        )
+actual val databaseModule =
+    module {
+        single<SqlDriver> {
+            AndroidSqliteDriver(
+                schema = ExpenseDatabase.Schema,
+                context = androidContext(),
+                name = "expense.db",
+            )
+        }
+
+        single<ExpenseDatabase> {
+            ExpenseDatabase(get())
+        }
+
+        // Firebase module removed - using Supabase for all platforms
     }
-    
-    single<ExpenseDatabase> {
-        ExpenseDatabase(get())
-    }
-    
-    // Firebase module removed - using Supabase for all platforms
-}

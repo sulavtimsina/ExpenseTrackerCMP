@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class ExpenseCategoryTest {
-
     @Test
     fun `fromDisplayName returns correct category`() {
         assertEquals(ExpenseCategory.FOOD, ExpenseCategory.fromDisplayName("Food"))

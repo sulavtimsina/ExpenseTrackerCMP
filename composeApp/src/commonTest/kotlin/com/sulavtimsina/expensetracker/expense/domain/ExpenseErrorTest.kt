@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ExpenseErrorTest {
-
     @Test
     fun `ExpenseError implements Error interface`() {
         val error: Error = ExpenseError.UnknownError()
@@ -122,7 +121,7 @@ class ExpenseErrorTest {
         val error1 = ExpenseError.UnknownError("test")
         val error2 = ExpenseError.UnknownError("test")
         val error3 = ExpenseError.UnknownError("different")
-        
+
         assertEquals(error1, error2)
         assertEquals(error1.hashCode(), error2.hashCode())
         assertTrue(error1 != error3)
@@ -132,7 +131,7 @@ class ExpenseErrorTest {
     fun `different error types are not equal even with same message`() {
         val unknownError = ExpenseError.UnknownError("test")
         val databaseError = ExpenseError.DatabaseError("test")
-        
+
         assertTrue(unknownError != databaseError)
     }
 }

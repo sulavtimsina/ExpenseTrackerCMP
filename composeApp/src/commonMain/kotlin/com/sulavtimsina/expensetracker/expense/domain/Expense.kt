@@ -8,5 +8,5 @@ data class Expense(
     val category: ExpenseCategory,
     val note: String?,
     val date: LocalDateTime,
-    val imagePath: String? = null
+    val imagePath: String? = null,
 )

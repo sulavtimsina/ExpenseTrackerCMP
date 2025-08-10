@@ -5,10 +5,9 @@ import com.sulavtimsina.expensetracker.expense.data.cloud.model.SupabaseExpenseI
 import com.sulavtimsina.expensetracker.expense.data.cloud.model.SupabaseExpenseUpdate
 import com.sulavtimsina.expensetracker.expense.domain.Expense
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 
 fun SupabaseExpense.toDomainExpense(): Expense {
     return Expense(
@@ -17,7 +16,7 @@ fun SupabaseExpense.toDomainExpense(): Expense {
         category = ExpenseCategory.fromDisplayName(category),
         note = note,
         date = date.toLocalDateTime(TimeZone.currentSystemDefault()),
-        imagePath = imagePath
+        imagePath = imagePath,
     )
 }
 
@@ -29,7 +28,7 @@ fun Expense.toSupabaseExpenseInsert(userId: String): SupabaseExpenseInsert {
         category = category.displayName,
         note = note,
         date = date.toInstant(TimeZone.currentSystemDefault()),
-        imagePath = imagePath
+        imagePath = imagePath,
     )
 }
 
@@ -39,6 +38,6 @@ fun Expense.toSupabaseExpenseUpdate(): SupabaseExpenseUpdate {
         category = category.displayName,
         note = note,
         date = date.toInstant(TimeZone.currentSystemDefault()),
-        imagePath = imagePath
+        imagePath = imagePath,
     )
 }

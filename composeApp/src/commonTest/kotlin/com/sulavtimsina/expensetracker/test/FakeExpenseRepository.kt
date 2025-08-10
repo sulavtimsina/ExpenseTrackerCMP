@@ -66,7 +66,7 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override fun getExpensesByDateRange(
         startDate: LocalDateTime,
-        endDate: LocalDateTime
+        endDate: LocalDateTime,
     ): Flow<List<Expense>> {
         return flowOf(expenses.filter { it.date >= startDate && it.date <= endDate })
     }

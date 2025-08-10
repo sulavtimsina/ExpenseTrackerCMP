@@ -3,58 +3,57 @@ package com.sulavtimsina.expensetracker.expense.data.repository
 import com.sulavtimsina.expensetracker.core.domain.Result
 import com.sulavtimsina.expensetracker.expense.data.cloud.ExpenseCloudSource
 import com.sulavtimsina.expensetracker.expense.data.cloud.SupabaseExpenseSource
-import com.sulavtimsina.expensetracker.expense.data.mappers.toDatabaseExpense
 import com.sulavtimsina.expensetracker.expense.data.database.ExpenseDatabaseSource
+import com.sulavtimsina.expensetracker.expense.data.mappers.toDatabaseExpense
 import com.sulavtimsina.expensetracker.expense.data.mappers.toDomainExpense
 import com.sulavtimsina.expensetracker.expense.domain.Expense
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseError
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class ExpenseRepositoryImplHybrid(
     private val localSource: ExpenseDatabaseSource,
-    private val cloudSource: ExpenseCloudSource
+    private val cloudSource: ExpenseCloudSource,
 ) : ExpenseRepository {
-    
     private val syncScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    
+
     init {
         // Start background sync when repository is created
         startBackgroundSync()
     }
-    
+
     override fun getAllExpenses(): Flow<List<Expense>> {
         // Always return local data for immediate UI updates
         return localSource.getAllExpenses().map { databaseExpenses ->
             databaseExpenses.map { it.toDomainExpense() }
         }
     }
-    
+
     override fun getExpensesByCategory(category: ExpenseCategory): Flow<List<Expense>> {
         return localSource.getExpensesByCategory(category.displayName).map { databaseExpenses ->
             databaseExpenses.map { it.toDomainExpense() }
         }
     }
-    
+
     override fun getExpensesByDateRange(
         startDate: kotlinx.datetime.LocalDateTime,
-        endDate: kotlinx.datetime.LocalDateTime
+        endDate: kotlinx.datetime.LocalDateTime,
     ): Flow<List<Expense>> {
         return localSource.getExpensesByDateRange(
             startDate.toString(),
-            endDate.toString()
+            endDate.toString(),
         ).map { databaseExpenses ->
             databaseExpenses.map { it.toDomainExpense() }
         }
     }
-    
+
     override suspend fun getExpenseById(id: String): Result<Expense?, ExpenseError> {
         return try {
             val databaseExpense = localSource.getExpenseById(id)
@@ -63,12 +62,12 @@ class ExpenseRepositoryImplHybrid(
             Result.Error(ExpenseError.DatabaseError("Failed to get expense: ${e.message}"))
         }
     }
-    
+
     override suspend fun insertExpense(expense: Expense): Result<Unit, ExpenseError> {
         return try {
             println("=== INSERT EXPENSE ===")
             println("Inserting expense: ${expense.id} - ${expense.amount} - ${expense.note}")
-            
+
             // Insert locally first for immediate feedback
             val dbExpense = expense.toDatabaseExpense()
             localSource.insertExpense(
@@ -77,10 +76,10 @@ class ExpenseRepositoryImplHybrid(
                 dbExpense.category,
                 dbExpense.note,
                 dbExpense.date,
-                dbExpense.imagePath
+                dbExpense.imagePath,
             )
             println("✓ Successfully inserted expense locally")
-            
+
             // Sync to cloud immediately if user is authenticated
             val currentUserId = cloudSource.getCurrentUserId()
             if (currentUserId != null) {
@@ -103,14 +102,14 @@ class ExpenseRepositoryImplHybrid(
                     syncExpenseToCloud(expense)
                 }
             }
-            
+
             Result.Success(Unit)
         } catch (e: Exception) {
             println("✗ Failed to insert expense: ${e.message}")
             Result.Error(ExpenseError.DatabaseError("Failed to insert expense: ${e.message}"))
         }
     }
-    
+
     override suspend fun updateExpense(expense: Expense): Result<Unit, ExpenseError> {
         return try {
             // Update locally first
@@ -121,67 +120,68 @@ class ExpenseRepositoryImplHybrid(
                 dbExpense.category,
                 dbExpense.note,
                 dbExpense.date,
-                dbExpense.imagePath
+                dbExpense.imagePath,
             )
-            
+
             // Sync to cloud in background
             syncScope.launch {
                 syncExpenseToCloud(expense)
             }
-            
+
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(ExpenseError.DatabaseError("Failed to update expense: ${e.message}"))
         }
     }
-    
+
     override suspend fun deleteExpense(id: String): Result<Unit, ExpenseError> {
         return try {
             // Delete locally first
             localSource.deleteExpense(id)
-            
+
             // Delete from cloud in background
             syncScope.launch {
                 cloudSource.deleteExpense(id)
             }
-            
+
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(ExpenseError.DatabaseError("Failed to delete expense: ${e.message}"))
         }
     }
-    
+
     suspend fun signInAndStartSync(): Result<String, ExpenseError> {
         // Check if already authenticated (from email/password login)
         val currentUserId = cloudSource.getCurrentUserId()
-        
-        val signInResult = if (currentUserId != null) {
-            println("User already authenticated: $currentUserId")
-            Result.Success(currentUserId)
-        } else {
-            println("No authenticated user found, signing in anonymously")
-            cloudSource.signInAnonymously()
-        }
-        
+
+        val signInResult =
+            if (currentUserId != null) {
+                println("User already authenticated: $currentUserId")
+                Result.Success(currentUserId)
+            } else {
+                println("No authenticated user found, signing in anonymously")
+                cloudSource.signInAnonymously()
+            }
+
         if (signInResult is Result.Success) {
             // Start initial sync after successful sign-in or existing authentication
             syncScope.launch {
                 performInitialSync()
             }
         }
-        
+
         return signInResult
     }
-    
+
     suspend fun triggerSyncForAuthenticatedUser(): Result<String, ExpenseError> {
         val userId = cloudSource.getCurrentUserId()
         return if (userId != null) {
             println("=== SYNC DEBUG ===")
             println("Triggering sync for authenticated user: $userId")
-            
+
             // Test Supabase connection immediately
             testSupabaseConnection()
-            
+
             println("Starting performInitialSync...")
             syncScope.launch {
                 performInitialSync()
@@ -193,7 +193,7 @@ class ExpenseRepositoryImplHybrid(
             Result.Error(ExpenseError.CloudSync("No authenticated user found"))
         }
     }
-    
+
     private fun testSupabaseConnection() {
         syncScope.launch {
             try {
@@ -216,13 +216,13 @@ class ExpenseRepositoryImplHybrid(
             }
         }
     }
-    
+
     private fun startBackgroundSync() {
         syncScope.launch {
             // Only start sync if user is already signed in
             if (cloudSource.getCurrentUserId() != null) {
                 performInitialSync()
-                
+
                 // Set up real-time sync
                 cloudSource.getAllExpenses().collect { cloudExpenses ->
                     syncFromCloudToLocal(cloudExpenses)
@@ -230,16 +230,16 @@ class ExpenseRepositoryImplHybrid(
             }
         }
     }
-    
+
     private suspend fun performInitialSync() {
         try {
             println("=== PERFORM INITIAL SYNC ===")
             println("Current user ID: ${cloudSource.getCurrentUserId()}")
-            
+
             // First, sync all local expenses to cloud
             println("Step 1: Syncing local expenses to cloud...")
             syncAllLocalExpensesToCloud()
-            
+
             // Then sync from cloud to local - only collect once for initial sync
             try {
                 println("Step 2: Fetching expenses from cloud...")
@@ -267,7 +267,7 @@ class ExpenseRepositoryImplHybrid(
             e.printStackTrace()
         }
     }
-    
+
     private suspend fun syncAllLocalExpensesToCloud() {
         try {
             val userId = cloudSource.getCurrentUserId()
@@ -275,7 +275,7 @@ class ExpenseRepositoryImplHybrid(
                 println("Cannot sync local expenses to cloud: User not authenticated")
                 return
             }
-            
+
             println("Starting to sync all local expenses to cloud for user: $userId")
             val localExpenses = localSource.getAllExpenses()
             localExpenses.collect { databaseExpenses ->
@@ -307,14 +307,14 @@ class ExpenseRepositoryImplHybrid(
             e.printStackTrace()
         }
     }
-    
+
     private suspend fun syncExpenseToCloud(expense: Expense) {
         val userId = cloudSource.getCurrentUserId()
         if (userId == null) {
             println("Cannot sync to cloud: User not authenticated")
             return
         }
-        
+
         try {
             println("Syncing expense ${expense.id} to cloud")
             val result = cloudSource.syncExpense(expense)
@@ -328,7 +328,7 @@ class ExpenseRepositoryImplHybrid(
             e.printStackTrace()
         }
     }
-    
+
     private suspend fun refreshFromCloud() {
         try {
             println("=== REFRESH FROM CLOUD ===")
@@ -349,14 +349,14 @@ class ExpenseRepositoryImplHybrid(
             println("Error during cloud refresh: ${e.message}")
         }
     }
-    
+
     private suspend fun syncFromCloudToLocal(cloudExpenses: List<Expense>) {
         try {
             cloudExpenses.forEach { cloudExpense ->
                 // Check if expense exists locally
                 val existingExpense = getExpenseById(cloudExpense.id)
                 val dbExpense = cloudExpense.toDatabaseExpense()
-                
+
                 when (existingExpense) {
                     is Result.Success -> {
                         if (existingExpense.data == null) {
@@ -367,7 +367,7 @@ class ExpenseRepositoryImplHybrid(
                                 dbExpense.category,
                                 dbExpense.note,
                                 dbExpense.date,
-                                dbExpense.imagePath
+                                dbExpense.imagePath,
                             )
                         } else {
                             // Expense exists, update it (cloud version is considered authoritative for conflicts)
@@ -377,7 +377,7 @@ class ExpenseRepositoryImplHybrid(
                                 dbExpense.category,
                                 dbExpense.note,
                                 dbExpense.date,
-                                dbExpense.imagePath
+                                dbExpense.imagePath,
                             )
                         }
                     }
@@ -389,7 +389,7 @@ class ExpenseRepositoryImplHybrid(
                             dbExpense.category,
                             dbExpense.note,
                             dbExpense.date,
-                            dbExpense.imagePath
+                            dbExpense.imagePath,
                         )
                     }
                 }

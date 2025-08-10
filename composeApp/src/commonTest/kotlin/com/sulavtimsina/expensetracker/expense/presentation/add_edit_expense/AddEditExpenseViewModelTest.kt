@@ -9,7 +9,6 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddEditExpenseViewModelTest {
-
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var fakeRepository: FakeExpenseRepository
     private lateinit var viewModel: AddEditExpenseViewModel
@@ -20,110 +19,119 @@ class AddEditExpenseViewModelTest {
         fakeRepository = FakeExpenseRepository()
         viewModel = AddEditExpenseViewModel(fakeRepository)
     }
-    
+
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
     }
 
     @Test
-    fun `amount change updates state correctly`() = runTest {
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnAmountChange("25.50"))
+    fun `amount change updates state correctly`() =
+        runTest {
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnAmountChange("25.50"))
 
-        // Then
-        assertEquals("25.50", viewModel.state.value.amount)
-        assertNull(viewModel.state.value.amountError)
-    }
-
-    @Test
-    fun `category change updates state correctly`() = runTest {
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
-
-        // Then
-        assertEquals(ExpenseCategory.FOOD, viewModel.state.value.category)
-    }
+            // Then
+            assertEquals("25.50", viewModel.state.value.amount)
+            assertNull(viewModel.state.value.amountError)
+        }
 
     @Test
-    fun `note change updates state correctly`() = runTest {
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnNoteChange("Test note"))
+    fun `category change updates state correctly`() =
+        runTest {
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
 
-        // Then
-        assertEquals("Test note", viewModel.state.value.note)
-    }
-
-    @Test
-    fun `save with invalid amount shows error`() = runTest {
-        // Given
-        viewModel.onAction(AddEditExpenseAction.OnAmountChange("invalid"))
-        viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
-
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnSave)
-
-        // Then
-        assertNotNull(viewModel.state.value.amountError)
-        assertEquals("Please enter a valid amount", viewModel.state.value.amountError)
-    }
+            // Then
+            assertEquals(ExpenseCategory.FOOD, viewModel.state.value.category)
+        }
 
     @Test
-    fun `save with negative amount shows error`() = runTest {
-        // Given
-        viewModel.onAction(AddEditExpenseAction.OnAmountChange("-10"))
-        viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
+    fun `note change updates state correctly`() =
+        runTest {
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnNoteChange("Test note"))
 
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnSave)
-
-        // Then
-        assertNotNull(viewModel.state.value.amountError)
-    }
+            // Then
+            assertEquals("Test note", viewModel.state.value.note)
+        }
 
     @Test
-    fun `save without category shows error`() = runTest {
-        // Given
-        viewModel.onAction(AddEditExpenseAction.OnAmountChange("25.50"))
+    fun `save with invalid amount shows error`() =
+        runTest {
+            // Given
+            viewModel.onAction(AddEditExpenseAction.OnAmountChange("invalid"))
+            viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
 
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnSave)
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnSave)
 
-        // Then
-        assertNotNull(viewModel.state.value.errorMessage)
-        assertEquals("Please select a category", viewModel.state.value.errorMessage)
-    }
-
-    @Test
-    fun `save with valid data succeeds`() = runTest {
-        // Given
-        viewModel.onAction(AddEditExpenseAction.OnAmountChange("25.50"))
-        viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
-        viewModel.onAction(AddEditExpenseAction.OnNoteChange("Lunch"))
-
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnSave)
-        advanceUntilIdle()
-
-        // Then
-        assertTrue(viewModel.state.value.isSaved)
-    }
+            // Then
+            assertNotNull(viewModel.state.value.amountError)
+            assertEquals("Please enter a valid amount", viewModel.state.value.amountError)
+        }
 
     @Test
-    fun `clear error sets error message to null`() = runTest {
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnClearError)
+    fun `save with negative amount shows error`() =
+        runTest {
+            // Given
+            viewModel.onAction(AddEditExpenseAction.OnAmountChange("-10"))
+            viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
 
-        // Then
-        assertNull(viewModel.state.value.errorMessage)
-    }
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnSave)
+
+            // Then
+            assertNotNull(viewModel.state.value.amountError)
+        }
 
     @Test
-    fun `image path change updates state correctly`() = runTest {
-        // When
-        viewModel.onAction(AddEditExpenseAction.OnImagePathChange("/path/to/image.jpg"))
+    fun `save without category shows error`() =
+        runTest {
+            // Given
+            viewModel.onAction(AddEditExpenseAction.OnAmountChange("25.50"))
 
-        // Then
-        assertEquals("/path/to/image.jpg", viewModel.state.value.imagePath)
-    }
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnSave)
+
+            // Then
+            assertNotNull(viewModel.state.value.errorMessage)
+            assertEquals("Please select a category", viewModel.state.value.errorMessage)
+        }
+
+    @Test
+    fun `save with valid data succeeds`() =
+        runTest {
+            // Given
+            viewModel.onAction(AddEditExpenseAction.OnAmountChange("25.50"))
+            viewModel.onAction(AddEditExpenseAction.OnCategoryChange(ExpenseCategory.FOOD))
+            viewModel.onAction(AddEditExpenseAction.OnNoteChange("Lunch"))
+
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnSave)
+            advanceUntilIdle()
+
+            // Then
+            assertTrue(viewModel.state.value.isSaved)
+        }
+
+    @Test
+    fun `clear error sets error message to null`() =
+        runTest {
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnClearError)
+
+            // Then
+            assertNull(viewModel.state.value.errorMessage)
+        }
+
+    @Test
+    fun `image path change updates state correctly`() =
+        runTest {
+            // When
+            viewModel.onAction(AddEditExpenseAction.OnImagePathChange("/path/to/image.jpg"))
+
+            // Then
+            assertEquals("/path/to/image.jpg", viewModel.state.value.imagePath)
+        }
 }

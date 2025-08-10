@@ -4,7 +4,6 @@ import com.sulavtimsina.expensetracker.analytics.domain.AnalyticsPeriod
 import kotlin.test.*
 
 class AnalyticsStateTest {
-
     @Test
     fun `AnalyticsState default values are correct`() {
         // When
@@ -27,12 +26,13 @@ class AnalyticsStateTest {
         val initialState = AnalyticsState()
 
         // When
-        val updatedState = initialState.copy(
-            isLoading = true,
-            selectedChartType = AnalyticsState.ChartType.MONTHLY_TREND,
-            showDatePicker = true,
-            datePickerType = AnalyticsState.DatePickerType.START_DATE
-        )
+        val updatedState =
+            initialState.copy(
+                isLoading = true,
+                selectedChartType = AnalyticsState.ChartType.MONTHLY_TREND,
+                showDatePicker = true,
+                datePickerType = AnalyticsState.DatePickerType.START_DATE,
+            )
 
         // Then
         assertTrue(updatedState.isLoading)
@@ -45,7 +45,7 @@ class AnalyticsStateTest {
     fun `ChartType enum contains all expected values`() {
         // When/Then
         val chartTypes = AnalyticsState.ChartType.entries
-        
+
         assertTrue(chartTypes.contains(AnalyticsState.ChartType.CATEGORY_PIE))
         assertTrue(chartTypes.contains(AnalyticsState.ChartType.MONTHLY_TREND))
         assertTrue(chartTypes.contains(AnalyticsState.ChartType.DAILY_TREND))
@@ -56,7 +56,7 @@ class AnalyticsStateTest {
     fun `DatePickerType enum contains all expected values`() {
         // When/Then
         val datePickerTypes = AnalyticsState.DatePickerType.entries
-        
+
         assertTrue(datePickerTypes.contains(AnalyticsState.DatePickerType.START_DATE))
         assertTrue(datePickerTypes.contains(AnalyticsState.DatePickerType.END_DATE))
         assertEquals(2, datePickerTypes.size)
@@ -69,10 +69,11 @@ class AnalyticsStateTest {
         val customEndDate = kotlinx.datetime.LocalDateTime(2024, 1, 31, 23, 59)
 
         // When
-        val state = AnalyticsState(
-            customStartDate = customStartDate,
-            customEndDate = customEndDate
-        )
+        val state =
+            AnalyticsState(
+                customStartDate = customStartDate,
+                customEndDate = customEndDate,
+            )
 
         // Then
         assertEquals(customStartDate, state.customStartDate)

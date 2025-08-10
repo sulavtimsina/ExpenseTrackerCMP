@@ -24,54 +24,57 @@ fun ExpenseCard(
     expense: Expense,
     onExpenseClick: (Expense) -> Unit,
     onDeleteExpense: (Expense) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = 4.dp,
-        onClick = { onExpenseClick(expense) }
+        onClick = { onExpenseClick(expense) },
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Category Color Indicator
             Box(
-                modifier = Modifier
-                    .size(4.dp, 48.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(getCategoryColor(expense.category.displayName))
+                modifier =
+                    Modifier
+                        .size(4.dp, 48.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(getCategoryColor(expense.category.displayName)),
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             // Main content
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                    verticalAlignment = Alignment.Top,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "$${expense.amount}",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colors.onSurface
+                            color = MaterialTheme.colors.onSurface,
                         )
                         Text(
                             text = expense.category.displayName,
                             fontSize = 14.sp,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
                         )
                         if (expense.note != null) {
                             Text(
@@ -79,29 +82,29 @@ fun ExpenseCard(
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
-                    
+
                     Column(
-                        horizontalAlignment = Alignment.End
+                        horizontalAlignment = Alignment.End,
                     ) {
                         Text(
                             text = formatDate(expense.date),
                             fontSize = 12.sp,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
                         )
-                        
+
                         IconButton(
                             onClick = { showDeleteDialog = true },
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
                                 tint = Color.Red,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }
@@ -120,7 +123,7 @@ fun ExpenseCard(
                     onClick = {
                         onDeleteExpense(expense)
                         showDeleteDialog = false
-                    }
+                    },
                 ) {
                     Text("Delete", color = Color.Red)
                 }
@@ -129,22 +132,23 @@ fun ExpenseCard(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text("Cancel")
                 }
-            }
+            },
         )
     }
 }
 
-private fun getCategoryColor(category: String): Color = when (category) {
-    "Food" -> Color(0xFF4CAF50)
-    "Transportation" -> Color(0xFF2196F3)
-    "Entertainment" -> Color(0xFF9C27B0)
-    "Shopping" -> Color(0xFFFF9800)
-    "Bills" -> Color(0xFFF44336)
-    "Healthcare" -> Color(0xFF009688)
-    "Education" -> Color(0xFF673AB7)
-    "Travel" -> Color(0xFF3F51B5)
-    else -> Color(0xFF607D8B)
-}
+private fun getCategoryColor(category: String): Color =
+    when (category) {
+        "Food" -> Color(0xFF4CAF50)
+        "Transportation" -> Color(0xFF2196F3)
+        "Entertainment" -> Color(0xFF9C27B0)
+        "Shopping" -> Color(0xFFFF9800)
+        "Bills" -> Color(0xFFF44336)
+        "Healthcare" -> Color(0xFF009688)
+        "Education" -> Color(0xFF673AB7)
+        "Travel" -> Color(0xFF3F51B5)
+        else -> Color(0xFF607D8B)
+    }
 
 private fun formatDate(date: LocalDateTime): String {
     return "${date.monthNumber.toString().padStart(2, '0')}/${date.dayOfMonth.toString().padStart(2, '0')}"

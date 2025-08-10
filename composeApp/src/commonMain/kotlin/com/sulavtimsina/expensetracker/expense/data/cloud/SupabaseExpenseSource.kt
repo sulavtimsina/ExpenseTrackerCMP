@@ -8,18 +8,16 @@ import com.sulavtimsina.expensetracker.expense.data.cloud.mappers.toSupabaseExpe
 import com.sulavtimsina.expensetracker.expense.data.cloud.model.SupabaseExpense
 import com.sulavtimsina.expensetracker.expense.domain.Expense
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseError
+import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 
 class SupabaseExpenseSource : ExpenseCloudSource {
-    
     private val supabase = SupabaseClient.client
-    
+
     override suspend fun signInAnonymously(): Result<String, ExpenseError> {
         return try {
             // Check if already signed in
@@ -28,10 +26,10 @@ class SupabaseExpenseSource : ExpenseCloudSource {
                 println("Already signed in with user: $existingUserId")
                 return Result.Success(existingUserId)
             }
-            
+
             // Sign in anonymously
             supabase.auth.signInAnonymously()
-            
+
             // After sign in, get the current user ID
             val userId = supabase.auth.currentUserOrNull()?.id
             if (userId != null) {
@@ -45,11 +43,11 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             Result.Error(ExpenseError.CloudSync("Failed to sign in: ${e.message}"))
         }
     }
-    
+
     override fun getCurrentUserId(): String? {
         return supabase.auth.currentUserOrNull()?.id
     }
-    
+
     override fun getAllExpenses(): Flow<List<Expense>> {
         val userId = getCurrentUserId()
         return if (userId != null) {
@@ -73,18 +71,19 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             flowOf(emptyList())
         }
     }
-    
+
     override suspend fun insertExpense(expense: Expense): Result<Unit, ExpenseError> {
-        val userId = getCurrentUserId() ?: return Result.Error(
-            ExpenseError.CloudSync("User not authenticated")
-        )
-        
+        val userId =
+            getCurrentUserId() ?: return Result.Error(
+                ExpenseError.CloudSync("User not authenticated"),
+            )
+
         return try {
             println("Attempting to insert expense to Supabase: ${expense.id}")
             println("User ID: $userId")
             val supabaseExpense = expense.toSupabaseExpenseInsert(userId)
             println("Supabase expense data: $supabaseExpense")
-            
+
             supabase.from("expenses").insert(supabaseExpense)
             println("Successfully inserted expense to Supabase")
             Result.Success(Unit)
@@ -94,7 +93,7 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             Result.Error(ExpenseError.CloudSync("Failed to insert expense: ${e.message}"))
         }
     }
-    
+
     override suspend fun updateExpense(expense: Expense): Result<Unit, ExpenseError> {
         return try {
             supabase.from("expenses")
@@ -108,7 +107,7 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             Result.Error(ExpenseError.CloudSync("Failed to update expense: ${e.message}"))
         }
     }
-    
+
     override suspend fun deleteExpense(id: String): Result<Unit, ExpenseError> {
         return try {
             supabase.from("expenses").delete {
@@ -121,12 +120,13 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             Result.Error(ExpenseError.CloudSync("Failed to delete expense: ${e.message}"))
         }
     }
-    
+
     override suspend fun syncExpense(expense: Expense): Result<Unit, ExpenseError> {
-        val userId = getCurrentUserId() ?: return Result.Error(
-            ExpenseError.CloudSync("User not authenticated")
-        )
-        
+        val userId =
+            getCurrentUserId() ?: return Result.Error(
+                ExpenseError.CloudSync("User not authenticated"),
+            )
+
         return try {
             println("=== SUPABASE SYNC ===")
             println("Attempting to sync expense to Supabase:")
@@ -135,10 +135,10 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             println("  - Amount: ${expense.amount}")
             println("  - Category: ${expense.category}")
             println("  - Note: ${expense.note}")
-            
+
             val insertData = expense.toSupabaseExpenseInsert(userId)
             println("Insert data prepared: $insertData")
-            
+
             supabase.from("expenses").upsert(insertData)
             println("✓ Successfully synced expense to Supabase")
             Result.Success(Unit)
@@ -148,23 +148,24 @@ class SupabaseExpenseSource : ExpenseCloudSource {
             Result.Error(ExpenseError.CloudSync("Failed to sync expense: ${e.message}"))
         }
     }
-    
+
     // Helper method to fetch all expenses (manual sync)
     suspend fun fetchAllExpenses(): Result<List<Expense>, ExpenseError> {
         return try {
             val currentUser = getCurrentUserId()
             println("=== FETCHING EXPENSES FROM SUPABASE ===")
             println("Current authenticated user: $currentUser")
-            
-            val result = supabase.from("expenses")
-                .select(Columns.ALL)
-                .decodeList<SupabaseExpense>()
-            
+
+            val result =
+                supabase.from("expenses")
+                    .select(Columns.ALL)
+                    .decodeList<SupabaseExpense>()
+
             println("Raw result from Supabase: ${result.size} expenses")
             result.forEach { expense ->
                 println("  - ${expense.id}: user=${expense.userId}, amount=${expense.amount}, note=${expense.note}")
             }
-            
+
             val expenses = result.map { it.toDomainExpense() }
             Result.Success(expenses)
         } catch (e: Exception) {

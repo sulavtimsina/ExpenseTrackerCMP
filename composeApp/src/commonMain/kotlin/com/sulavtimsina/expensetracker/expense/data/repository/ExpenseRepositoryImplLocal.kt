@@ -13,16 +13,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 
 class ExpenseRepositoryImplLocal(
-    private val databaseSource: ExpenseDatabaseSource
+    private val databaseSource: ExpenseDatabaseSource,
 ) : ExpenseRepository {
-
     override fun getAllExpenses(): Flow<List<Expense>> {
         return databaseSource.getAllExpenses()
             .map { expenses ->
                 expenses.map { it.toDomainExpense() }
             }
-            .catch { 
-                emit(emptyList()) 
+            .catch {
+                emit(emptyList())
             }
     }
 
@@ -43,7 +42,7 @@ class ExpenseRepositoryImplLocal(
                 category = expense.category.displayName,
                 note = expense.note,
                 date = expense.date.toString(),
-                imagePath = expense.imagePath
+                imagePath = expense.imagePath,
             )
             Result.Success(Unit)
         } catch (e: Exception) {
@@ -59,7 +58,7 @@ class ExpenseRepositoryImplLocal(
                 category = expense.category.displayName,
                 note = expense.note,
                 date = expense.date.toString(),
-                imagePath = expense.imagePath
+                imagePath = expense.imagePath,
             )
             Result.Success(Unit)
         } catch (e: Exception) {
@@ -81,22 +80,22 @@ class ExpenseRepositoryImplLocal(
             .map { expenses ->
                 expenses.map { it.toDomainExpense() }
             }
-            .catch { 
-                emit(emptyList()) 
+            .catch {
+                emit(emptyList())
             }
     }
 
     override fun getExpensesByDateRange(
         startDate: LocalDateTime,
-        endDate: LocalDateTime
+        endDate: LocalDateTime,
     ): Flow<List<Expense>> {
         return databaseSource.getExpensesByDateRange(
             startDate.toString(),
-            endDate.toString()
+            endDate.toString(),
         ).map { expenses ->
             expenses.map { it.toDomainExpense() }
-        }.catch { 
-            emit(emptyList()) 
+        }.catch {
+            emit(emptyList())
         }
     }
 }

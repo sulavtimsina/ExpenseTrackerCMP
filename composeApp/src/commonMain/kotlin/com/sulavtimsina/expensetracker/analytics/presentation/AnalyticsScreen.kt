@@ -2,6 +2,7 @@ package com.sulavtimsina.expensetracker.analytics.presentation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.*
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -13,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,24 +22,22 @@ import androidx.compose.ui.unit.dp
 import com.sulavtimsina.expensetracker.analytics.domain.AnalyticsPeriod
 import com.sulavtimsina.expensetracker.analytics.presentation.components.LineChart
 import com.sulavtimsina.expensetracker.analytics.presentation.components.PieChart
-import org.koin.compose.viewmodel.koinViewModel
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.round
 
 // Multiplatform-compatible number formatting
-private fun Double.formatCurrency(): String = 
-    "${(round(this * 100) / 100.0)}"
+private fun Double.formatCurrency(): String = "${(round(this * 100) / 100.0)}"
 
-private fun Double.formatPercentage(): String = 
-    "${(round(this * 10) / 10.0)}"
+private fun Double.formatPercentage(): String = "${(round(this * 10) / 10.0)}"
 
 @Composable
 fun AnalyticsScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AnalyticsViewModel = koinViewModel()
+    viewModel: AnalyticsViewModel = koinViewModel(),
 ) {
     val state = viewModel.state
 
@@ -51,29 +49,30 @@ fun AnalyticsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
                 },
                 actions = {
                     IconButton(
-                        onClick = { viewModel.onAction(AnalyticsAction.RefreshData) }
+                        onClick = { viewModel.onAction(AnalyticsAction.RefreshData) },
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh"
+                            contentDescription = "Refresh",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Period Selection
             item {
@@ -84,7 +83,7 @@ fun AnalyticsScreen(
                     },
                     onCustomDateClick = {
                         viewModel.onAction(AnalyticsAction.ShowDatePicker(AnalyticsState.DatePickerType.START_DATE))
-                    }
+                    },
                 )
             }
 
@@ -105,7 +104,7 @@ fun AnalyticsScreen(
                             selectedChartType = state.selectedChartType,
                             onChartTypeSelected = { chartType ->
                                 viewModel.onAction(AnalyticsAction.SelectChartType(chartType))
-                            }
+                            },
                         )
                     }
 
@@ -116,7 +115,7 @@ fun AnalyticsScreen(
                                 if (data.categoryBreakdown.isNotEmpty()) {
                                     PieChart(
                                         data = data.categoryBreakdown,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier.fillMaxWidth(),
                                     )
                                 } else {
                                     NoDataMessage("No spending data available for this period")
@@ -127,7 +126,7 @@ fun AnalyticsScreen(
                                     monthlyData = data.monthlyTrends,
                                     dailyData = data.dailyTrends,
                                     showMonthly = true,
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
                             }
                             AnalyticsState.ChartType.DAILY_TREND -> {
@@ -135,7 +134,7 @@ fun AnalyticsScreen(
                                     monthlyData = data.monthlyTrends,
                                     dailyData = data.dailyTrends,
                                     showMonthly = false,
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
                             }
                         }
@@ -167,7 +166,7 @@ fun AnalyticsScreen(
             },
             onDismiss = {
                 viewModel.onAction(AnalyticsAction.HideDatePicker)
-            }
+            },
         )
     }
 }
@@ -176,63 +175,63 @@ fun AnalyticsScreen(
 private fun PeriodSelectionSection(
     selectedPeriod: AnalyticsPeriod,
     onPeriodSelected: (AnalyticsPeriod.PeriodType) -> Unit,
-    onCustomDateClick: () -> Unit
+    onCustomDateClick: () -> Unit,
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = "Time Period",
                 style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 PeriodChip(
                     text = "30 Days",
                     isSelected = selectedPeriod.type == AnalyticsPeriod.PeriodType.LAST_30_DAYS,
                     onClick = { onPeriodSelected(AnalyticsPeriod.PeriodType.LAST_30_DAYS) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 PeriodChip(
                     text = "3 Months",
                     isSelected = selectedPeriod.type == AnalyticsPeriod.PeriodType.LAST_3_MONTHS,
                     onClick = { onPeriodSelected(AnalyticsPeriod.PeriodType.LAST_3_MONTHS) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 PeriodChip(
                     text = "6 Months",
                     isSelected = selectedPeriod.type == AnalyticsPeriod.PeriodType.LAST_6_MONTHS,
                     onClick = { onPeriodSelected(AnalyticsPeriod.PeriodType.LAST_6_MONTHS) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 PeriodChip(
                     text = "1 Year",
                     isSelected = selectedPeriod.type == AnalyticsPeriod.PeriodType.LAST_YEAR,
                     onClick = { onPeriodSelected(AnalyticsPeriod.PeriodType.LAST_YEAR) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             }
 
             Button(
                 onClick = onCustomDateClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(
                     imageVector = Icons.Default.DateRange,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Custom Date Range")
@@ -246,14 +245,15 @@ private fun PeriodChip(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
         modifier = modifier,
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.surface
-        )
+        colors =
+            ButtonDefaults.buttonColors(
+                backgroundColor = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.surface,
+            ),
     ) {
         Text(text)
     }
@@ -264,32 +264,32 @@ private fun SummarySection(data: com.sulavtimsina.expensetracker.analytics.domai
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
                 text = "Summary",
                 style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 SummaryItem(
                     title = "Total Spent",
                     value = "$${data.totalAmount.formatCurrency()}",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 SummaryItem(
                     title = "Avg/Day",
                     value = "$${data.averagePerDay.formatCurrency()}",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 SummaryItem(
                     title = "Avg/Month",
                     value = "$${data.averagePerMonth.formatCurrency()}",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
@@ -300,22 +300,22 @@ private fun SummarySection(data: com.sulavtimsina.expensetracker.analytics.domai
 private fun SummaryItem(
     title: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onSurface
+            color = MaterialTheme.colors.onSurface,
         )
         Text(
             text = value,
             style = MaterialTheme.typography.h5,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colors.primary
+            color = MaterialTheme.colors.primary,
         )
     }
 }
@@ -323,50 +323,65 @@ private fun SummaryItem(
 @Composable
 private fun ChartTypeSelection(
     selectedChartType: AnalyticsState.ChartType,
-    onChartTypeSelected: (AnalyticsState.ChartType) -> Unit
+    onChartTypeSelected: (AnalyticsState.ChartType) -> Unit,
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = "Chart View",
                 style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Button(
                     onClick = { onChartTypeSelected(AnalyticsState.ChartType.CATEGORY_PIE) },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (selectedChartType == AnalyticsState.ChartType.CATEGORY_PIE) 
-                            MaterialTheme.colors.primary else MaterialTheme.colors.surface
-                    )
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            backgroundColor =
+                                if (selectedChartType == AnalyticsState.ChartType.CATEGORY_PIE) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    MaterialTheme.colors.surface
+                                },
+                        ),
                 ) {
                     Text("Categories")
                 }
                 Button(
                     onClick = { onChartTypeSelected(AnalyticsState.ChartType.MONTHLY_TREND) },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (selectedChartType == AnalyticsState.ChartType.MONTHLY_TREND) 
-                            MaterialTheme.colors.primary else MaterialTheme.colors.surface
-                    )
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            backgroundColor =
+                                if (selectedChartType == AnalyticsState.ChartType.MONTHLY_TREND) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    MaterialTheme.colors.surface
+                                },
+                        ),
                 ) {
                     Text("Monthly")
                 }
                 Button(
                     onClick = { onChartTypeSelected(AnalyticsState.ChartType.DAILY_TREND) },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (selectedChartType == AnalyticsState.ChartType.DAILY_TREND) 
-                            MaterialTheme.colors.primary else MaterialTheme.colors.surface
-                    )
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            backgroundColor =
+                                if (selectedChartType == AnalyticsState.ChartType.DAILY_TREND) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    MaterialTheme.colors.surface
+                                },
+                        ),
                 ) {
                     Text("Daily")
                 }
@@ -378,10 +393,11 @@ private fun ChartTypeSelection(
 @Composable
 private fun LoadingSection() {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator()
     }
@@ -391,18 +407,19 @@ private fun LoadingSection() {
 private fun NoDataMessage(message: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        backgroundColor = MaterialTheme.colors.surface
+        backgroundColor = MaterialTheme.colors.surface,
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(48.dp),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(48.dp),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = message,
                 style = MaterialTheme.typography.body1,
-                color = MaterialTheme.colors.onSurface
+                color = MaterialTheme.colors.onSurface,
             )
         }
     }
@@ -412,17 +429,18 @@ private fun NoDataMessage(message: String) {
 private fun DatePickerDialog(
     datePickerType: AnalyticsState.DatePickerType,
     onDateSelected: (kotlinx.datetime.LocalDateTime) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     // Simplified date picker - in production use Material3 DatePicker
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = when (datePickerType) {
-                    AnalyticsState.DatePickerType.START_DATE -> "Select Start Date"
-                    AnalyticsState.DatePickerType.END_DATE -> "Select End Date"
-                }
+                text =
+                    when (datePickerType) {
+                        AnalyticsState.DatePickerType.START_DATE -> "Select Start Date"
+                        AnalyticsState.DatePickerType.END_DATE -> "Select End Date"
+                    },
             )
         },
         text = {
@@ -435,7 +453,7 @@ private fun DatePickerDialog(
                     val timeZone = kotlinx.datetime.TimeZone.currentSystemDefault()
                     val now = instant.toLocalDateTime(timeZone)
                     onDateSelected(now)
-                }
+                },
             ) {
                 Text("OK")
             }
@@ -444,6 +462,6 @@ private fun DatePickerDialog(
             Button(onClick = onDismiss) {
                 Text("Cancel")
             }
-        }
+        },
     )
 }

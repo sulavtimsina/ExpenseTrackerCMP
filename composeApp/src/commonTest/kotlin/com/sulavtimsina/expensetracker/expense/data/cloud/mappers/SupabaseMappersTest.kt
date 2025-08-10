@@ -11,22 +11,22 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.test.*
 
 class SupabaseMappersTest {
-
     @Test
     fun `toDomainExpense maps SupabaseExpense to domain Expense correctly`() {
         // Given
         val date = Instant.parse("2024-01-15T12:00:00Z")
-        val supabaseExpense = SupabaseExpense(
-            id = "1",
-            userId = "user123",
-            amount = 25.50,
-            category = "Food",
-            note = "Lunch at restaurant",
-            date = date,
-            imagePath = "/path/to/image.jpg",
-            createdAt = date,
-            updatedAt = date
-        )
+        val supabaseExpense =
+            SupabaseExpense(
+                id = "1",
+                userId = "user123",
+                amount = 25.50,
+                category = "Food",
+                note = "Lunch at restaurant",
+                date = date,
+                imagePath = "/path/to/image.jpg",
+                createdAt = date,
+                updatedAt = date,
+            )
 
         // When
         val domainExpense = supabaseExpense.toDomainExpense()
@@ -44,17 +44,18 @@ class SupabaseMappersTest {
     fun `toDomainExpense maps SupabaseExpense with null note correctly`() {
         // Given
         val date = Instant.parse("2024-01-15T12:00:00Z")
-        val supabaseExpense = SupabaseExpense(
-            id = "1",
-            userId = "user123",
-            amount = 25.50,
-            category = "Transportation",
-            note = null,
-            date = date,
-            imagePath = null,
-            createdAt = date,
-            updatedAt = date
-        )
+        val supabaseExpense =
+            SupabaseExpense(
+                id = "1",
+                userId = "user123",
+                amount = 25.50,
+                category = "Transportation",
+                note = null,
+                date = date,
+                imagePath = null,
+                createdAt = date,
+                updatedAt = date,
+            )
 
         // When
         val domainExpense = supabaseExpense.toDomainExpense()
@@ -69,31 +70,33 @@ class SupabaseMappersTest {
 
     @Test
     fun `toDomainExpense handles all expense categories correctly`() {
-        val categories = listOf(
-            "Food" to ExpenseCategory.FOOD,
-            "Transportation" to ExpenseCategory.TRANSPORTATION,
-            "Entertainment" to ExpenseCategory.ENTERTAINMENT,
-            "Shopping" to ExpenseCategory.SHOPPING,
-            "Bills" to ExpenseCategory.BILLS,
-            "Healthcare" to ExpenseCategory.HEALTHCARE,
-            "Education" to ExpenseCategory.EDUCATION,
-            "Travel" to ExpenseCategory.TRAVEL,
-            "Other" to ExpenseCategory.OTHER
-        )
+        val categories =
+            listOf(
+                "Food" to ExpenseCategory.FOOD,
+                "Transportation" to ExpenseCategory.TRANSPORTATION,
+                "Entertainment" to ExpenseCategory.ENTERTAINMENT,
+                "Shopping" to ExpenseCategory.SHOPPING,
+                "Bills" to ExpenseCategory.BILLS,
+                "Healthcare" to ExpenseCategory.HEALTHCARE,
+                "Education" to ExpenseCategory.EDUCATION,
+                "Travel" to ExpenseCategory.TRAVEL,
+                "Other" to ExpenseCategory.OTHER,
+            )
 
         categories.forEach { (supabaseCategory, expectedDomainCategory) ->
             // Given
-            val supabaseExpense = SupabaseExpense(
-                id = "1",
-                userId = "user123",
-                amount = 10.0,
-                category = supabaseCategory,
-                note = null,
-                date = Instant.parse("2024-01-15T12:00:00Z"),
-                imagePath = null,
-                createdAt = Instant.parse("2024-01-15T12:00:00Z"),
-                updatedAt = Instant.parse("2024-01-15T12:00:00Z")
-            )
+            val supabaseExpense =
+                SupabaseExpense(
+                    id = "1",
+                    userId = "user123",
+                    amount = 10.0,
+                    category = supabaseCategory,
+                    note = null,
+                    date = Instant.parse("2024-01-15T12:00:00Z"),
+                    imagePath = null,
+                    createdAt = Instant.parse("2024-01-15T12:00:00Z"),
+                    updatedAt = Instant.parse("2024-01-15T12:00:00Z"),
+                )
 
             // When
             val domainExpense = supabaseExpense.toDomainExpense()
@@ -107,14 +110,15 @@ class SupabaseMappersTest {
     fun `toSupabaseExpenseInsert maps domain Expense to SupabaseExpenseInsert correctly`() {
         // Given
         val localDateTime = LocalDateTime(2024, 1, 15, 12, 0)
-        val domainExpense = Expense(
-            id = "1",
-            amount = 25.50,
-            category = ExpenseCategory.FOOD,
-            note = "Lunch at restaurant",
-            date = localDateTime,
-            imagePath = "/path/to/image.jpg"
-        )
+        val domainExpense =
+            Expense(
+                id = "1",
+                amount = 25.50,
+                category = ExpenseCategory.FOOD,
+                note = "Lunch at restaurant",
+                date = localDateTime,
+                imagePath = "/path/to/image.jpg",
+            )
         val userId = "user123"
 
         // When
@@ -134,14 +138,15 @@ class SupabaseMappersTest {
     fun `toSupabaseExpenseInsert maps domain Expense with null note correctly`() {
         // Given
         val localDateTime = LocalDateTime(2024, 1, 15, 12, 0)
-        val domainExpense = Expense(
-            id = "1",
-            amount = 25.50,
-            category = ExpenseCategory.TRANSPORTATION,
-            note = null,
-            date = localDateTime,
-            imagePath = null
-        )
+        val domainExpense =
+            Expense(
+                id = "1",
+                amount = 25.50,
+                category = ExpenseCategory.TRANSPORTATION,
+                note = null,
+                date = localDateTime,
+                imagePath = null,
+            )
         val userId = "user123"
 
         // When
@@ -158,28 +163,30 @@ class SupabaseMappersTest {
 
     @Test
     fun `toSupabaseExpenseInsert handles all expense categories correctly`() {
-        val categories = listOf(
-            ExpenseCategory.FOOD to "Food",
-            ExpenseCategory.TRANSPORTATION to "Transportation",
-            ExpenseCategory.ENTERTAINMENT to "Entertainment",
-            ExpenseCategory.SHOPPING to "Shopping",
-            ExpenseCategory.BILLS to "Bills",
-            ExpenseCategory.HEALTHCARE to "Healthcare",
-            ExpenseCategory.EDUCATION to "Education",
-            ExpenseCategory.TRAVEL to "Travel",
-            ExpenseCategory.OTHER to "Other"
-        )
+        val categories =
+            listOf(
+                ExpenseCategory.FOOD to "Food",
+                ExpenseCategory.TRANSPORTATION to "Transportation",
+                ExpenseCategory.ENTERTAINMENT to "Entertainment",
+                ExpenseCategory.SHOPPING to "Shopping",
+                ExpenseCategory.BILLS to "Bills",
+                ExpenseCategory.HEALTHCARE to "Healthcare",
+                ExpenseCategory.EDUCATION to "Education",
+                ExpenseCategory.TRAVEL to "Travel",
+                ExpenseCategory.OTHER to "Other",
+            )
 
         categories.forEach { (domainCategory, expectedSupabaseCategory) ->
             // Given
-            val domainExpense = Expense(
-                id = "1",
-                amount = 10.0,
-                category = domainCategory,
-                note = null,
-                date = LocalDateTime(2024, 1, 15, 12, 0),
-                imagePath = null
-            )
+            val domainExpense =
+                Expense(
+                    id = "1",
+                    amount = 10.0,
+                    category = domainCategory,
+                    note = null,
+                    date = LocalDateTime(2024, 1, 15, 12, 0),
+                    imagePath = null,
+                )
 
             // When
             val supabaseInsert = domainExpense.toSupabaseExpenseInsert("user123")
@@ -193,14 +200,15 @@ class SupabaseMappersTest {
     fun `toSupabaseExpenseUpdate maps domain Expense to SupabaseExpenseUpdate correctly`() {
         // Given
         val localDateTime = LocalDateTime(2024, 1, 15, 12, 0)
-        val domainExpense = Expense(
-            id = "1",
-            amount = 30.75,
-            category = ExpenseCategory.ENTERTAINMENT,
-            note = "Movie tickets",
-            date = localDateTime,
-            imagePath = "/updated/path/to/image.jpg"
-        )
+        val domainExpense =
+            Expense(
+                id = "1",
+                amount = 30.75,
+                category = ExpenseCategory.ENTERTAINMENT,
+                note = "Movie tickets",
+                date = localDateTime,
+                imagePath = "/updated/path/to/image.jpg",
+            )
 
         // When
         val supabaseUpdate = domainExpense.toSupabaseExpenseUpdate()
@@ -217,14 +225,15 @@ class SupabaseMappersTest {
     fun `toSupabaseExpenseUpdate maps domain Expense with null values correctly`() {
         // Given
         val localDateTime = LocalDateTime(2024, 1, 15, 12, 0)
-        val domainExpense = Expense(
-            id = "1",
-            amount = 15.25,
-            category = ExpenseCategory.BILLS,
-            note = null,
-            date = localDateTime,
-            imagePath = null
-        )
+        val domainExpense =
+            Expense(
+                id = "1",
+                amount = 15.25,
+                category = ExpenseCategory.BILLS,
+                note = null,
+                date = localDateTime,
+                imagePath = null,
+            )
 
         // When
         val supabaseUpdate = domainExpense.toSupabaseExpenseUpdate()
@@ -240,28 +249,30 @@ class SupabaseMappersTest {
     fun `round trip conversion preserves data integrity`() {
         // Given - original domain expense
         val originalDate = LocalDateTime(2024, 1, 15, 12, 30, 45)
-        val originalExpense = Expense(
-            id = "test-id",
-            amount = 123.45,
-            category = ExpenseCategory.SHOPPING,
-            note = "Test purchase",
-            date = originalDate,
-            imagePath = "/test/path.jpg"
-        )
+        val originalExpense =
+            Expense(
+                id = "test-id",
+                amount = 123.45,
+                category = ExpenseCategory.SHOPPING,
+                note = "Test purchase",
+                date = originalDate,
+                imagePath = "/test/path.jpg",
+            )
 
         // When - convert to supabase and back
         val supabaseInsert = originalExpense.toSupabaseExpenseInsert("user123")
-        val supabaseExpense = SupabaseExpense(
-            id = supabaseInsert.id,
-            userId = supabaseInsert.userId,
-            amount = supabaseInsert.amount,
-            category = supabaseInsert.category,
-            note = supabaseInsert.note,
-            date = supabaseInsert.date,
-            imagePath = supabaseInsert.imagePath,
-            createdAt = supabaseInsert.date,
-            updatedAt = supabaseInsert.date
-        )
+        val supabaseExpense =
+            SupabaseExpense(
+                id = supabaseInsert.id,
+                userId = supabaseInsert.userId,
+                amount = supabaseInsert.amount,
+                category = supabaseInsert.category,
+                note = supabaseInsert.note,
+                date = supabaseInsert.date,
+                imagePath = supabaseInsert.imagePath,
+                createdAt = supabaseInsert.date,
+                updatedAt = supabaseInsert.date,
+            )
         val convertedExpense = supabaseExpense.toDomainExpense()
 
         // Then - data should be preserved

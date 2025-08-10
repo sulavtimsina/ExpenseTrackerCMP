@@ -7,10 +7,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import kotlinx.datetime.format.MonthNames
-import kotlinx.datetime.format.char
 
 class GetAnalyticsDataUseCase(
-    private val repository: ExpenseRepository
+    private val repository: ExpenseRepository,
 ) {
     operator fun invoke(period: AnalyticsPeriod): Flow<AnalyticsData> {
         return repository.getExpensesByDateRange(period.startDate, period.endDate)
@@ -21,17 +20,17 @@ class GetAnalyticsDataUseCase(
 
     private fun calculateAnalyticsData(
         expenses: List<Expense>,
-        period: AnalyticsPeriod
+        period: AnalyticsPeriod,
     ): AnalyticsData {
         val totalAmount = expenses.sumOf { it.amount }
-        
+
         val categoryBreakdown = calculateCategoryBreakdown(expenses, totalAmount)
         val monthlyTrends = calculateMonthlyTrends(expenses)
         val dailyTrends = calculateDailyTrends(expenses)
-        
+
         val totalDays = calculateDaysBetween(period.startDate, period.endDate)
         val totalMonths = calculateMonthsBetween(period.startDate, period.endDate)
-        
+
         val averagePerDay = if (totalDays > 0) totalAmount / totalDays else 0.0
         val averagePerMonth = if (totalMonths > 0) totalAmount / totalMonths else 0.0
 
@@ -42,13 +41,13 @@ class GetAnalyticsDataUseCase(
             dailyTrends = dailyTrends,
             averagePerDay = averagePerDay,
             averagePerMonth = averagePerMonth,
-            period = period
+            period = period,
         )
     }
 
     private fun calculateCategoryBreakdown(
         expenses: List<Expense>,
-        totalAmount: Double
+        totalAmount: Double,
     ): List<CategoryData> {
         return expenses
             .groupBy { it.category }
@@ -59,7 +58,7 @@ class GetAnalyticsDataUseCase(
                     category = category,
                     amount = amount,
                     percentage = percentage,
-                    transactionCount = categoryExpenses.size
+                    transactionCount = categoryExpenses.size,
                 )
             }
             .sortedByDescending { it.amount }
@@ -70,14 +69,15 @@ class GetAnalyticsDataUseCase(
             .groupBy { "${it.date.year}-${it.date.monthNumber.toString().padStart(2, '0')}" }
             .map { (monthKey, monthExpenses) ->
                 val firstExpense = monthExpenses.first()
-                val monthFormat = LocalDateTime.Format {
-                    monthName(MonthNames.ENGLISH_ABBREVIATED)
-                }
+                val monthFormat =
+                    LocalDateTime.Format {
+                        monthName(MonthNames.ENGLISH_ABBREVIATED)
+                    }
                 MonthlyData(
                     month = firstExpense.date.format(monthFormat),
                     year = firstExpense.date.year,
                     amount = monthExpenses.sumOf { it.amount },
-                    transactionCount = monthExpenses.size
+                    transactionCount = monthExpenses.size,
                 )
             }
             .sortedBy { "${it.year}-${getMonthNumber(it.month)}" }
@@ -89,29 +89,38 @@ class GetAnalyticsDataUseCase(
             .map { (_, dayExpenses) ->
                 val firstExpense = dayExpenses.first()
                 DailyData(
-                    date = LocalDateTime(
-                        firstExpense.date.year,
-                        firstExpense.date.month,
-                        firstExpense.date.dayOfMonth,
-                        0, 0
-                    ),
+                    date =
+                        LocalDateTime(
+                            firstExpense.date.year,
+                            firstExpense.date.month,
+                            firstExpense.date.dayOfMonth,
+                            0,
+                            0,
+                        ),
                     amount = dayExpenses.sumOf { it.amount },
-                    transactionCount = dayExpenses.size
+                    transactionCount = dayExpenses.size,
                 )
             }
             .sortedBy { it.date }
     }
 
-    private fun calculateDaysBetween(startDate: LocalDateTime, endDate: LocalDateTime): Int {
+    private fun calculateDaysBetween(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+    ): Int {
         // Simple day calculation - for more accuracy, use kotlinx-datetime's date arithmetic
         val startEpochDays = startDate.date.toEpochDays()
         val endEpochDays = endDate.date.toEpochDays()
         return (endEpochDays - startEpochDays).toInt().coerceAtLeast(1)
     }
 
-    private fun calculateMonthsBetween(startDate: LocalDateTime, endDate: LocalDateTime): Int {
-        val monthDiff = (endDate.year - startDate.year) * 12 + 
-                       (endDate.monthNumber - startDate.monthNumber)
+    private fun calculateMonthsBetween(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+    ): Int {
+        val monthDiff =
+            (endDate.year - startDate.year) * 12 +
+                (endDate.monthNumber - startDate.monthNumber)
         return monthDiff.coerceAtLeast(1)
     }
 

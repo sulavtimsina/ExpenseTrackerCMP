@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
 class ExpenseDatabaseSource(
-    private val database: ExpenseDatabase
+    private val database: ExpenseDatabase,
 ) {
     private val queries = database.expenseQueries
 
@@ -27,7 +27,7 @@ class ExpenseDatabaseSource(
         category: String,
         note: String?,
         date: String,
-        imagePath: String?
+        imagePath: String?,
     ) {
         queries.insertExpense(id, amount, category, note, date, imagePath)
     }
@@ -38,7 +38,7 @@ class ExpenseDatabaseSource(
         category: String,
         note: String?,
         date: String,
-        imagePath: String?
+        imagePath: String?,
     ) {
         queries.updateExpense(amount, category, note, date, imagePath, id)
     }
@@ -55,7 +55,7 @@ class ExpenseDatabaseSource(
 
     fun getExpensesByDateRange(
         startDate: String,
-        endDate: String
+        endDate: String,
     ): Flow<List<com.sulavtimsina.expensetracker.database.Expense>> {
         return queries.selectExpensesByDateRange(startDate, endDate)
             .asFlow()

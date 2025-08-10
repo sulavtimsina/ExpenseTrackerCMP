@@ -25,7 +25,7 @@ fun AddEditExpenseScreen(
     expenseId: String? = null,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AddEditExpenseViewModel = koinViewModel()
+    viewModel: AddEditExpenseViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -48,37 +48,38 @@ fun AddEditExpenseScreen(
                     Text(
                         if (expenseId != null) "Edit Expense" else "Add Expense",
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
                 },
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = MaterialTheme.colors.onPrimary
+                contentColor = MaterialTheme.colors.onPrimary,
             )
-        }
+        },
     ) { paddingValues ->
         if (state.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
         } else {
             Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier =
+                    modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 // Amount Field
                 OutlinedTextField(
@@ -89,14 +90,14 @@ fun AddEditExpenseScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     isError = state.amountError != null,
                     shape = RoundedCornerShape(12.dp),
-                    singleLine = true
+                    singleLine = true,
                 )
-                
+
                 state.amountError?.let { error ->
                     Text(
                         text = error,
                         color = Color.Red,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
                     )
                 }
 
@@ -104,14 +105,14 @@ fun AddEditExpenseScreen(
                 Text(
                     text = "Category",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
-                
+
                 CategorySelection(
                     selectedCategory = state.category,
-                    onCategorySelected = { 
+                    onCategorySelected = {
                         viewModel.onAction(AddEditExpenseAction.OnCategoryChange(it))
-                    }
+                    },
                 )
 
                 // Note Field
@@ -119,16 +120,20 @@ fun AddEditExpenseScreen(
                     value = state.note,
                     onValueChange = { viewModel.onAction(AddEditExpenseAction.OnNoteChange(it)) },
                     label = { Text("Note (Optional)") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
                     shape = RoundedCornerShape(12.dp),
-                    maxLines = 4
+                    maxLines = 4,
                 )
 
                 // Date Field (simplified - you can enhance this with date picker)
                 OutlinedTextField(
-                    value = "${state.date.year}-${state.date.monthNumber.toString().padStart(2, '0')}-${state.date.dayOfMonth.toString().padStart(2, '0')}",
+                    value = "${state.date.year}-${state.date.monthNumber.toString().padStart(
+                        2,
+                        '0',
+                    )}-${state.date.dayOfMonth.toString().padStart(2, '0')}",
                     onValueChange = { /* Handle date change */ },
                     label = { Text("Date") },
                     modifier = Modifier.fillMaxWidth(),
@@ -136,10 +141,10 @@ fun AddEditExpenseScreen(
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select Date"
+                            contentDescription = "Select Date",
                         )
                     },
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -147,22 +152,23 @@ fun AddEditExpenseScreen(
                 // Save Button
                 Button(
                     onClick = { viewModel.onAction(AddEditExpenseAction.OnSave) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = !state.isLoading
+                    enabled = !state.isLoading,
                 ) {
                     if (state.isLoading) {
                         CircularProgressIndicator(
                             color = MaterialTheme.colors.onPrimary,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     } else {
                         Text(
                             text = if (expenseId != null) "Update Expense" else "Add Expense",
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
                         )
                     }
                 }
@@ -184,7 +190,7 @@ fun AddEditExpenseScreen(
 private fun CategorySelection(
     selectedCategory: ExpenseCategory?,
     onCategorySelected: (ExpenseCategory) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val categories = ExpenseCategory.entries
     val chunkedCategories = categories.chunked(3)
@@ -193,52 +199,56 @@ private fun CategorySelection(
         chunkedCategories.forEach { rowCategories ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 rowCategories.forEach { category ->
                     Surface(
                         onClick = { onCategorySelected(category) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .height(48.dp),
                         shape = RoundedCornerShape(12.dp),
-                        color = if (selectedCategory == category) {
-                            MaterialTheme.colors.primary
-                        } else {
-                            MaterialTheme.colors.surface
-                        },
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
+                        color =
                             if (selectedCategory == category) {
                                 MaterialTheme.colors.primary
                             } else {
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
-                            }
-                        )
+                                MaterialTheme.colors.surface
+                            },
+                        border =
+                            androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (selectedCategory == category) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                                },
+                            ),
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = category.displayName,
                                 fontSize = 12.sp,
-                                color = if (selectedCategory == category) {
-                                    MaterialTheme.colors.onPrimary
-                                } else {
-                                    MaterialTheme.colors.onSurface
-                                }
+                                color =
+                                    if (selectedCategory == category) {
+                                        MaterialTheme.colors.onPrimary
+                                    } else {
+                                        MaterialTheme.colors.onSurface
+                                    },
                             )
                         }
                     }
                 }
-                
+
                 // Fill remaining space if row is not complete
                 repeat(3 - rowCategories.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
-            
+
             if (rowCategories != chunkedCategories.last()) {
                 Spacer(modifier = Modifier.height(8.dp))
             }

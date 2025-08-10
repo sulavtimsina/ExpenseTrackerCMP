@@ -1,8 +1,8 @@
 package com.sulavtimsina.expensetracker.expense.data.cloud.model
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.Instant
 
 @Serializable
 data class SupabaseExpense(
@@ -18,7 +18,7 @@ data class SupabaseExpense(
     @SerialName("created_at")
     val createdAt: Instant,
     @SerialName("updated_at")
-    val updatedAt: Instant
+    val updatedAt: Instant,
 )
 
 @Serializable
@@ -31,7 +31,7 @@ data class SupabaseExpenseInsert(
     val note: String? = null,
     val date: Instant,
     @SerialName("image_path")
-    val imagePath: String? = null
+    val imagePath: String? = null,
 )
 
 @Serializable
@@ -41,5 +41,5 @@ data class SupabaseExpenseUpdate(
     val note: String? = null,
     val date: Instant,
     @SerialName("image_path")
-    val imagePath: String? = null
+    val imagePath: String? = null,
 )

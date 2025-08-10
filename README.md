@@ -228,6 +228,7 @@ We welcome contributions! Please follow these steps:
 
 ### Development Guidelines
 - Follow **Kotlin coding conventions**
+- **ktlint formatter** runs automatically on each commit to ensure code style consistency
 - Write **unit tests** for new features
 - Update **documentation** as needed
 - Test on **multiple platforms** before submitting

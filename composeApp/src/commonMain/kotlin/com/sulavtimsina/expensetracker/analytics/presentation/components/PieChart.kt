@@ -18,33 +18,27 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.sulavtimsina.expensetracker.analytics.domain.CategoryData
 import com.sulavtimsina.expensetracker.expense.domain.ExpenseCategory
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.math.round
 
 // Multiplatform-compatible number formatting
-private fun Double.formatCurrency(): String = 
-    "${(round(this * 100) / 100.0)}"
+private fun Double.formatCurrency(): String = "${(round(this * 100) / 100.0)}"
 
-private fun Double.formatPercentage(): String = 
-    "${(round(this * 10) / 10.0)}"
+private fun Double.formatPercentage(): String = "${(round(this * 10) / 10.0)}"
 
-private fun Float.formatPercentage(): String = 
-    "${(round(this * 10) / 10.0)}"
+private fun Float.formatPercentage(): String = "${(round(this * 10) / 10.0)}"
 
 @Composable
 fun PieChart(
     data: List<CategoryData>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var startAngle by remember { mutableFloatStateOf(0f) }
     val animatedStartAngle by animateFloatAsState(
         targetValue = startAngle,
         animationSpec = tween(durationMillis = 1000),
-        label = "pie_chart_animation"
+        label = "pie_chart_animation",
     )
 
     LaunchedEffect(data) {
@@ -53,13 +47,14 @@ fun PieChart(
 
     Column(modifier = modifier) {
         Box(
-            modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.CenterHorizontally),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(200.dp)
+                    .align(Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center,
         ) {
             Canvas(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
                 drawPieChart(data, animatedStartAngle)
             }
@@ -69,12 +64,12 @@ fun PieChart(
 
         // Legend
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             data.forEach { categoryData ->
                 PieChartLegendItem(
                     categoryData = categoryData,
-                    color = getCategoryColor(categoryData.category)
+                    color = getCategoryColor(categoryData.category),
                 )
             }
         }
@@ -85,43 +80,47 @@ fun PieChart(
 private fun PieChartLegendItem(
     categoryData: CategoryData,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .size(16.dp)
-                .clip(CircleShape)
-                .background(color)
+            modifier =
+                Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(color),
         )
-        
+
         Spacer(modifier = Modifier.width(8.dp))
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = categoryData.category.displayName,
                 style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
             Text(
                 text = "${categoryData.percentage.formatPercentage()}% • $${categoryData.amount.formatCurrency()}",
                 style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface
+                color = MaterialTheme.colors.onSurface,
             )
         }
-        
+
         Text(
             text = "${categoryData.transactionCount} transactions",
             style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onSurface
+            color = MaterialTheme.colors.onSurface,
         )
     }
 }
 
-private fun DrawScope.drawPieChart(data: List<CategoryData>, animationProgress: Float) {
+private fun DrawScope.drawPieChart(
+    data: List<CategoryData>,
+    animationProgress: Float,
+) {
     val total = data.sumOf { it.amount }
     if (total <= 0) return
 
@@ -142,7 +141,7 @@ private fun DrawScope.drawPieChart(data: List<CategoryData>, animationProgress: 
             useCenter = false,
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
             topLeft = androidx.compose.ui.geometry.Offset(center.x - radius, center.y - radius),
-            size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
+            size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2),
         )
 
         currentAngle += sweepAngle

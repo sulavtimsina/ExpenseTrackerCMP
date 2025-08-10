@@ -16,5 +16,5 @@ data class AddEditExpenseState(
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
     val errorMessage: String? = null,
-    val amountError: String? = null
+    val amountError: String? = null,
 )
